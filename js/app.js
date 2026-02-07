@@ -39,10 +39,11 @@ function handleLogin(event) {
     const password = document.getElementById('loginPassword').value;
     const rememberMe = document.getElementById('rememberMe').checked;
     const loginButton = document.getElementById('loginButton');
+    const loginCard = document.querySelector('.login-card');
 
-    // Disable button and show loading
+    // Disable button and show loading with CSS class
     loginButton.disabled = true;
-    loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memverifikasi...';
+    loginButton.classList.add('loading');
 
     // Simulate network delay for better UX
     setTimeout(() => {
@@ -59,8 +60,19 @@ function handleLogin(event) {
                 localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(sessionData));
             }
 
-            // Hide login screen
-            document.getElementById('loginScreen').classList.add('hidden');
+            // Hide login screen with transition
+            const loginScreen = document.getElementById('loginScreen');
+            loginScreen.style.opacity = '0';
+            loginScreen.style.transform = 'scale(1.05)';
+            loginScreen.style.transition = 'all 0.4s ease';
+
+            setTimeout(() => {
+                loginScreen.classList.add('hidden');
+                loginScreen.style.opacity = '';
+                loginScreen.style.transform = '';
+                loginScreen.style.transition = '';
+            }, 400);
+
             showToast('Selamat datang, Admin!', 'success');
 
             // Load data
@@ -69,14 +81,13 @@ function handleLogin(event) {
             // Login failed
             showToast('Username atau password salah!', 'error');
             loginButton.disabled = false;
-            loginButton.innerHTML = '<i class="fas fa-sign-in-alt"></i> Masuk';
+            loginButton.classList.remove('loading');
 
-            // Shake animation on login card
-            const loginCard = document.querySelector('.login-card');
-            loginCard.style.animation = 'none';
+            // Shake animation on login card using CSS class
+            loginCard.classList.add('shake');
             setTimeout(() => {
-                loginCard.style.animation = 'shake 0.5s ease';
-            }, 10);
+                loginCard.classList.remove('shake');
+            }, 500);
         }
     }, 800);
 }
@@ -871,6 +882,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     initializeSearch();
     initializeSubmenu();
 
+    // Create login particles animation
+    createLoginParticles();
+
     // Check if user is already logged in
     if (checkAuth()) {
         // Hide login screen and load app
@@ -881,3 +895,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('loginScreen').classList.remove('hidden');
     }
 });
+
+// =============================================
+// LOGIN PARTICLES ANIMATION
+// =============================================
+
+function createLoginParticles() {
+    const particlesContainer = document.getElementById('loginParticles');
+    if (!particlesContainer) return;
+
+    const particleCount = 20;
+
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'login-particle';
+
+        // Random position
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = Math.random() * 100 + '%';
+
+        // Random size
+        const size = 4 + Math.random() * 8;
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+
+        // Random animation delay
+        particle.style.animationDelay = (Math.random() * 10) + 's';
+
+        // Random animation duration
+        particle.style.animationDuration = (10 + Math.random() * 15) + 's';
+
+        particlesContainer.appendChild(particle);
+    }
+}

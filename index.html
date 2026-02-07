@@ -468,20 +468,25 @@
     </div>
 
     <!-- Logout Confirmation Modal -->
-    <div class="modal" id="logoutModal">
+    <div class="modal logout-modal" id="logoutModal">
         <div class="modal-backdrop"></div>
-        <div class="modal-content">
+        <div class="modal-content logout-modal-content">
             <div class="modal-body">
-                <div class="confirm-icon logout-icon">
-                    <i class="fas fa-sign-out-alt"></i>
+                <div class="logout-icon-wrapper">
+                    <div class="logout-icon-circle">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                    <div class="logout-icon-ring"></div>
                 </div>
-                <h3 style="margin-bottom: 1rem;">Konfirmasi Logout</h3>
-                <p>Apakah Anda yakin ingin keluar dari sistem?</p>
+                <h3 class="logout-title">Keluar dari Sistem?</h3>
+                <p class="logout-message">Anda yakin ingin mengakhiri sesi dan keluar dari dashboard admin?</p>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('logoutModal')">Batal</button>
-                <button class="btn btn-danger" onclick="performLogout()">
-                    <i class="fas fa-sign-out-alt"></i> Logout
+            <div class="modal-footer logout-modal-footer">
+                <button class="btn btn-cancel-logout" onclick="closeModal('logoutModal')">
+                    <i class="fas fa-arrow-left"></i> Kembali
+                </button>
+                <button class="btn btn-confirm-logout" onclick="performLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Ya, Logout
                 </button>
             </div>
         </div>
@@ -489,40 +494,59 @@
 
     <!-- Login Screen -->
     <div class="login-screen" id="loginScreen">
+        <!-- Animated Background -->
+        <div class="login-bg-animation">
+            <div class="login-particles" id="loginParticles"></div>
+            <div class="login-glow"></div>
+        </div>
+
         <div class="login-container">
             <div class="login-card">
                 <div class="login-header">
-                    <div class="login-logo">🏘️</div>
-                    <h1>RT03/RW016</h1>
-                    <p>Kampung Sindangsari<br>Sistem Informasi Data Penerima MBG</p>
+                    <h1 class="login-welcome">Selamat Datang</h1>
+                    <p class="login-rt">RT03/RW016</p>
                 </div>
+
                 <form id="loginForm" onsubmit="handleLogin(event)">
-                    <div class="form-group">
+                    <div class="form-group login-form-group">
                         <label><i class="fas fa-user"></i> Username</label>
-                        <input type="text" class="form-control" id="loginUsername" placeholder="Masukkan username"
-                            required autocomplete="username">
+                        <div class="input-wrapper">
+                            <input type="text" class="form-control login-input" id="loginUsername"
+                                placeholder="Masukkan username" required autocomplete="username">
+                            <span class="input-focus-border"></span>
+                        </div>
                     </div>
-                    <div class="form-group">
+
+                    <div class="form-group login-form-group">
                         <label><i class="fas fa-lock"></i> Password</label>
                         <div class="password-input-wrapper">
-                            <input type="password" class="form-control" id="loginPassword"
+                            <input type="password" class="form-control login-input" id="loginPassword"
                                 placeholder="Masukkan password" required autocomplete="current-password">
+                            <span class="input-focus-border"></span>
                             <button type="button" class="password-toggle" onclick="togglePasswordVisibility()">
                                 <i class="fas fa-eye" id="passwordToggleIcon"></i>
                             </button>
                         </div>
                     </div>
+
                     <div class="form-group remember-me">
                         <label class="checkbox-label">
                             <input type="checkbox" id="rememberMe" checked>
                             <span class="checkmark"></span>
-                            <span>Ingat saya</span>
+                            <span>Ingat saya di perangkat ini</span>
                         </label>
                     </div>
+
                     <button type="submit" class="btn btn-login" id="loginButton">
-                        <i class="fas fa-sign-in-alt"></i> Masuk
+                        <span class="btn-login-text">
+                            <i class="fas fa-sign-in-alt"></i> Masuk ke Dashboard
+                        </span>
+                        <span class="btn-login-loader">
+                            <i class="fas fa-spinner fa-spin"></i> Memverifikasi...
+                        </span>
                     </button>
                 </form>
+
                 <div class="login-footer">
                     <p>© 2026 RT03/RW016 Kampung Sindangsari</p>
                 </div>
