@@ -1,11 +1,17 @@
 // Main Application Logic for Website Rukun Tetangga RT03/RW16
+// Using Supabase Database
 
 // Current active tab
 let currentTab = 'dashboard';
 let editingId = null;
 let editingType = null;
 
-// Initialize app - see bottom of file for DOMContentLoaded handler
+// Data cache for editing
+let dataCache = {
+    'ibu-menyusui': [],
+    'ibu-hamil': [],
+    'balita': []
+};
 
 // =============================================
 // NAVIGATION
@@ -104,8 +110,8 @@ function closeMobileMenu() {
 // DASHBOARD
 // =============================================
 
-function updateDashboard() {
-    const stats = getStatistics();
+async function updateDashboard() {
+    const stats = await getStatistics();
 
     document.getElementById('countIbuMenyusui').textContent = stats.ibuMenyusui;
     document.getElementById('countIbuHamil').textContent = stats.ibuHamil;
@@ -194,7 +200,7 @@ function openAddModal(type) {
     }
 }
 
-function openEditModal(type, id) {
+async function openEditModal(type, id) {
     editingId = id;
     editingType = type;
 
@@ -202,9 +208,10 @@ function openEditModal(type, id) {
     let modalId;
     let title;
 
+    // Find item from cache
     switch (type) {
         case 'ibu-menyusui':
-            item = getIbuMenyusui().find(i => i.id === id);
+            item = dataCache['ibu-menyusui'].find(i => i.id === id);
             modalId = 'modalIbuMenyusui';
             title = 'Edit Data Ibu Menyusui';
             if (item) {
@@ -213,11 +220,11 @@ function openEditModal(type, id) {
                 document.getElementById('imTanggalLahir').value = formatDateForInput(item.tanggalLahir);
                 document.getElementById('imAlamat').value = item.alamat;
                 document.getElementById('imNamaSuami').value = item.namaSuami;
-                document.getElementById('imKeterangan').value = item.keterangan;
+                document.getElementById('imKeterangan').value = item.keterangan || '';
             }
             break;
         case 'ibu-hamil':
-            item = getIbuHamil().find(i => i.id === id);
+            item = dataCache['ibu-hamil'].find(i => i.id === id);
             modalId = 'modalIbuHamil';
             title = 'Edit Data Ibu Hamil';
             if (item) {
@@ -226,11 +233,11 @@ function openEditModal(type, id) {
                 document.getElementById('ihTanggalLahir').value = formatDateForInput(item.tanggalLahir);
                 document.getElementById('ihAlamat').value = item.alamat;
                 document.getElementById('ihNamaSuami').value = item.namaSuami;
-                document.getElementById('ihKeterangan').value = item.keterangan;
+                document.getElementById('ihKeterangan').value = item.keterangan || '';
             }
             break;
         case 'balita':
-            item = getBalita().find(i => i.id === id);
+            item = dataCache['balita'].find(i => i.id === id);
             modalId = 'modalBalita';
             title = 'Edit Data Balita';
             if (item) {
@@ -238,7 +245,7 @@ function openEditModal(type, id) {
                 document.getElementById('bNama').value = item.nama;
                 document.getElementById('bTanggalLahir').value = formatDateForInput(item.tanggalLahir);
                 document.getElementById('bAlamat').value = item.alamat;
-                document.getElementById('bKeterangan').value = item.keterangan;
+                document.getElementById('bKeterangan').value = item.keterangan || '';
             }
             break;
     }
@@ -250,11 +257,16 @@ function openEditModal(type, id) {
     }
 }
 
-function handleFormSubmit(e) {
+async function handleFormSubmit(e) {
     e.preventDefault();
 
     const form = e.target;
     const formId = form.id;
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    // Disable submit button to prevent double submission
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
 
     let data, type;
 
@@ -296,6 +308,8 @@ function handleFormSubmit(e) {
     // Validate NIK
     if (!validateNIK(data.nik)) {
         showToast('NIK harus 16 digit angka', 'error');
+        submitButton.disabled = false;
+        submitButton.innerHTML = '<i class="fas fa-save"></i> Simpan';
         return;
     }
 
@@ -305,13 +319,13 @@ function handleFormSubmit(e) {
             // Update
             switch (type) {
                 case 'ibu-menyusui':
-                    updateIbuMenyusui(editingId, data);
+                    await updateIbuMenyusui(editingId, data);
                     break;
                 case 'ibu-hamil':
-                    updateIbuHamil(editingId, data);
+                    await updateIbuHamil(editingId, data);
                     break;
                 case 'balita':
-                    updateBalita(editingId, data);
+                    await updateBalita(editingId, data);
                     break;
             }
             showToast('Data berhasil diperbarui', 'success');
@@ -319,13 +333,13 @@ function handleFormSubmit(e) {
             // Add new
             switch (type) {
                 case 'ibu-menyusui':
-                    addIbuMenyusui(data);
+                    await addIbuMenyusui(data);
                     break;
                 case 'ibu-hamil':
-                    addIbuHamil(data);
+                    await addIbuHamil(data);
                     break;
                 case 'balita':
-                    addBalita(data);
+                    await addBalita(data);
                     break;
             }
             showToast('Data berhasil ditambahkan', 'success');
@@ -333,12 +347,15 @@ function handleFormSubmit(e) {
 
         // Close modal and refresh
         closeModal(`modal${type === 'ibu-menyusui' ? 'IbuMenyusui' : type === 'ibu-hamil' ? 'IbuHamil' : 'Balita'}`);
-        renderAllTables();
-        updateDashboard();
+        await renderAllTables();
+        await updateDashboard();
 
     } catch (error) {
-        showToast('Terjadi kesalahan saat menyimpan data', 'error');
+        showToast('Terjadi kesalahan saat menyimpan data: ' + error.message, 'error');
         console.error(error);
+    } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = '<i class="fas fa-save"></i> Simpan';
     }
 }
 
@@ -353,22 +370,22 @@ async function deleteItem(type, id) {
         try {
             switch (type) {
                 case 'ibu-menyusui':
-                    deleteIbuMenyusui(id);
+                    await deleteIbuMenyusui(id);
                     break;
                 case 'ibu-hamil':
-                    deleteIbuHamil(id);
+                    await deleteIbuHamil(id);
                     break;
                 case 'balita':
-                    deleteBalita(id);
+                    await deleteBalita(id);
                     break;
             }
 
             showToast('Data berhasil dihapus', 'success');
-            renderAllTables();
-            updateDashboard();
+            await renderAllTables();
+            await updateDashboard();
 
         } catch (error) {
-            showToast('Terjadi kesalahan saat menghapus data', 'error');
+            showToast('Terjadi kesalahan saat menghapus data: ' + error.message, 'error');
             console.error(error);
         }
     }
@@ -382,19 +399,19 @@ function initializeSearch() {
     const searchInputs = document.querySelectorAll('.search-box input');
 
     searchInputs.forEach(input => {
-        input.addEventListener('input', debounce((e) => {
+        input.addEventListener('input', debounce(async (e) => {
             const type = input.dataset.type;
             const searchTerm = e.target.value;
 
             switch (type) {
                 case 'ibu-menyusui':
-                    renderTableIbuMenyusui(searchTerm);
+                    await renderTableIbuMenyusui(searchTerm);
                     break;
                 case 'ibu-hamil':
-                    renderTableIbuHamil(searchTerm);
+                    await renderTableIbuHamil(searchTerm);
                     break;
                 case 'balita':
-                    renderTableBalita(searchTerm);
+                    await renderTableBalita(searchTerm);
                     break;
             }
         }, 300));
@@ -405,132 +422,209 @@ function initializeSearch() {
 // TABLE RENDERING
 // =============================================
 
-function renderAllTables() {
-    renderTableIbuMenyusui();
-    renderTableIbuHamil();
-    renderTableBalita();
+async function renderAllTables() {
+    await Promise.all([
+        renderTableIbuMenyusui(),
+        renderTableIbuHamil(),
+        renderTableBalita()
+    ]);
 }
 
-function renderTableIbuMenyusui(searchTerm = '') {
+async function renderTableIbuMenyusui(searchTerm = '') {
     const tbody = document.getElementById('tableIbuMenyusui');
     if (!tbody) return;
 
-    const allData = getIbuMenyusui();
-    const data = searchFilter(allData, searchTerm);
-
-    if (data.length === 0) {
-        const isSearching = searchTerm && searchTerm.trim() !== '';
+    // Show loading state
+    if (!searchTerm) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="8" class="empty-state">
-                    <i class="fas ${isSearching ? 'fa-search' : 'fa-inbox'}"></i>
-                    <p>${isSearching ? `Data tidak ditemukan untuk "${searchTerm}"` : 'Belum ada data ibu menyusui'}</p>
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Memuat data...</p>
                 </td>
             </tr>
         `;
-        return;
     }
 
-    tbody.innerHTML = data.map(item => `
-        <tr>
-            <td data-label="No">${item.no}</td>
-            <td data-label="NIK">${item.nik}</td>
-            <td data-label="Nama">${item.nama}</td>
-            <td data-label="Tanggal Lahir">${formatDate(item.tanggalLahir)}</td>
-            <td data-label="Alamat">${truncateText(item.alamat, 25)}</td>
-            <td data-label="Nama Suami">${item.namaSuami}</td>
-            <td data-label="Keterangan">${truncateText(item.keterangan, 20)}</td>
-            <td data-label="Aksi" class="actions">
-                <button class="btn btn-secondary btn-sm" onclick="openEditModal('ibu-menyusui', '${item.id}')" title="Edit">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-danger btn-sm" onclick="deleteItem('ibu-menyusui', '${item.id}')" title="Hapus">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
+    try {
+        const allData = await getIbuMenyusui();
+        dataCache['ibu-menyusui'] = allData; // Cache for editing
+        const data = searchFilter(allData, searchTerm);
+
+        if (data.length === 0) {
+            const isSearching = searchTerm && searchTerm.trim() !== '';
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="empty-state">
+                        <i class="fas ${isSearching ? 'fa-search' : 'fa-inbox'}"></i>
+                        <p>${isSearching ? `Data tidak ditemukan untuk "${searchTerm}"` : 'Belum ada data ibu menyusui'}</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = data.map(item => `
+            <tr>
+                <td data-label="No">${item.no}</td>
+                <td data-label="NIK">${item.nik}</td>
+                <td data-label="Nama">${item.nama}</td>
+                <td data-label="Tanggal Lahir">${formatDate(item.tanggalLahir)}</td>
+                <td data-label="Alamat">${truncateText(item.alamat, 25)}</td>
+                <td data-label="Nama Suami">${item.namaSuami}</td>
+                <td data-label="Keterangan">${truncateText(item.keterangan || '', 20)}</td>
+                <td data-label="Aksi" class="actions">
+                    <button class="btn btn-secondary btn-sm" onclick="openEditModal('ibu-menyusui', '${item.id}')" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteItem('ibu-menyusui', '${item.id}')" title="Hapus">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error rendering ibu menyusui table:', error);
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="empty-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Gagal memuat data. Periksa koneksi internet Anda.</p>
+                </td>
+            </tr>
+        `;
+    }
 }
 
-function renderTableIbuHamil(searchTerm = '') {
+async function renderTableIbuHamil(searchTerm = '') {
     const tbody = document.getElementById('tableIbuHamil');
     if (!tbody) return;
 
-    const allData = getIbuHamil();
-    const data = searchFilter(allData, searchTerm);
-
-    if (data.length === 0) {
-        const isSearching = searchTerm && searchTerm.trim() !== '';
+    // Show loading state
+    if (!searchTerm) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="8" class="empty-state">
-                    <i class="fas ${isSearching ? 'fa-search' : 'fa-inbox'}"></i>
-                    <p>${isSearching ? `Data tidak ditemukan untuk "${searchTerm}"` : 'Belum ada data ibu hamil'}</p>
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Memuat data...</p>
                 </td>
             </tr>
         `;
-        return;
     }
 
-    tbody.innerHTML = data.map(item => `
-        <tr>
-            <td data-label="No">${item.no}</td>
-            <td data-label="NIK">${item.nik}</td>
-            <td data-label="Nama">${item.nama}</td>
-            <td data-label="Tanggal Lahir">${formatDate(item.tanggalLahir)}</td>
-            <td data-label="Alamat">${truncateText(item.alamat, 25)}</td>
-            <td data-label="Nama Suami">${item.namaSuami}</td>
-            <td data-label="Keterangan">${truncateText(item.keterangan, 20)}</td>
-            <td data-label="Aksi" class="actions">
-                <button class="btn btn-secondary btn-sm" onclick="openEditModal('ibu-hamil', '${item.id}')" title="Edit">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-danger btn-sm" onclick="deleteItem('ibu-hamil', '${item.id}')" title="Hapus">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
+    try {
+        const allData = await getIbuHamil();
+        dataCache['ibu-hamil'] = allData; // Cache for editing
+        const data = searchFilter(allData, searchTerm);
+
+        if (data.length === 0) {
+            const isSearching = searchTerm && searchTerm.trim() !== '';
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="empty-state">
+                        <i class="fas ${isSearching ? 'fa-search' : 'fa-inbox'}"></i>
+                        <p>${isSearching ? `Data tidak ditemukan untuk "${searchTerm}"` : 'Belum ada data ibu hamil'}</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = data.map(item => `
+            <tr>
+                <td data-label="No">${item.no}</td>
+                <td data-label="NIK">${item.nik}</td>
+                <td data-label="Nama">${item.nama}</td>
+                <td data-label="Tanggal Lahir">${formatDate(item.tanggalLahir)}</td>
+                <td data-label="Alamat">${truncateText(item.alamat, 25)}</td>
+                <td data-label="Nama Suami">${item.namaSuami}</td>
+                <td data-label="Keterangan">${truncateText(item.keterangan || '', 20)}</td>
+                <td data-label="Aksi" class="actions">
+                    <button class="btn btn-secondary btn-sm" onclick="openEditModal('ibu-hamil', '${item.id}')" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteItem('ibu-hamil', '${item.id}')" title="Hapus">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error rendering ibu hamil table:', error);
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="empty-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Gagal memuat data. Periksa koneksi internet Anda.</p>
+                </td>
+            </tr>
+        `;
+    }
 }
 
-function renderTableBalita(searchTerm = '') {
+async function renderTableBalita(searchTerm = '') {
     const tbody = document.getElementById('tableBalita');
     if (!tbody) return;
 
-    const allData = getBalita();
-    const data = searchFilter(allData, searchTerm);
-
-    if (data.length === 0) {
-        const isSearching = searchTerm && searchTerm.trim() !== '';
+    // Show loading state
+    if (!searchTerm) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="7" class="empty-state">
-                    <i class="fas ${isSearching ? 'fa-search' : 'fa-inbox'}"></i>
-                    <p>${isSearching ? `Data tidak ditemukan untuk "${searchTerm}"` : 'Belum ada data balita'}</p>
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Memuat data...</p>
                 </td>
             </tr>
         `;
-        return;
     }
 
-    tbody.innerHTML = data.map(item => `
-        <tr>
-            <td data-label="No">${item.no}</td>
-            <td data-label="NIK">${item.nik}</td>
-            <td data-label="Nama">${item.nama}</td>
-            <td data-label="Tanggal Lahir">${formatDate(item.tanggalLahir)} (${calculateAge(item.tanggalLahir)})</td>
-            <td data-label="Alamat">${truncateText(item.alamat, 25)}</td>
-            <td data-label="Keterangan">${truncateText(item.keterangan, 20)}</td>
-            <td data-label="Aksi" class="actions">
-                <button class="btn btn-secondary btn-sm" onclick="openEditModal('balita', '${item.id}')" title="Edit">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-danger btn-sm" onclick="deleteItem('balita', '${item.id}')" title="Hapus">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
+    try {
+        const allData = await getBalita();
+        dataCache['balita'] = allData; // Cache for editing
+        const data = searchFilter(allData, searchTerm);
+
+        if (data.length === 0) {
+            const isSearching = searchTerm && searchTerm.trim() !== '';
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="empty-state">
+                        <i class="fas ${isSearching ? 'fa-search' : 'fa-inbox'}"></i>
+                        <p>${isSearching ? `Data tidak ditemukan untuk "${searchTerm}"` : 'Belum ada data balita'}</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = data.map(item => `
+            <tr>
+                <td data-label="No">${item.no}</td>
+                <td data-label="NIK">${item.nik}</td>
+                <td data-label="Nama">${item.nama}</td>
+                <td data-label="Tanggal Lahir">${formatDate(item.tanggalLahir)} (${calculateAge(item.tanggalLahir)})</td>
+                <td data-label="Alamat">${truncateText(item.alamat, 25)}</td>
+                <td data-label="Keterangan">${truncateText(item.keterangan || '', 20)}</td>
+                <td data-label="Aksi" class="actions">
+                    <button class="btn btn-secondary btn-sm" onclick="openEditModal('balita', '${item.id}')" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteItem('balita', '${item.id}')" title="Hapus">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error rendering balita table:', error);
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="empty-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Gagal memuat data. Periksa koneksi internet Anda.</p>
+                </td>
+            </tr>
+        `;
+    }
 }
 
 // =============================================
@@ -559,38 +653,50 @@ const exportTitleInfo = {
     }
 };
 
-function exportData(type) {
+async function exportData(type) {
     let data, filename, headers;
 
-    switch (type) {
-        case 'ibu-menyusui':
-            data = getIbuMenyusui();
-            filename = 'Data_Ibu_Menyusui_RT03_RW16';
-            headers = ['No', 'NIK', 'Nama Ibu Menyusui', 'Tanggal Lahir', 'Alamat', 'Nama Suami', 'Keterangan'];
-            break;
-        case 'ibu-hamil':
-            data = getIbuHamil();
-            filename = 'Data_Ibu_Hamil_RT03_RW16';
-            headers = ['No', 'NIK', 'Nama Ibu Hamil', 'Tanggal Lahir', 'Alamat', 'Nama Suami', 'Keterangan'];
-            break;
-        case 'balita':
-            data = getBalita();
-            filename = 'Data_Balita_RT03_RW16';
-            headers = ['No', 'NIK', 'Nama Balita', 'Tanggal Lahir', 'Alamat', 'Keterangan'];
-            break;
-        default:
+    showToast('Mengambil data untuk ekspor...', 'info');
+
+    try {
+        switch (type) {
+            case 'ibu-menyusui':
+                data = await getIbuMenyusui();
+                filename = 'Data_Ibu_Menyusui_RT03_RW16';
+                headers = ['No', 'NIK', 'Nama Ibu Menyusui', 'Tanggal Lahir', 'Alamat', 'Nama Suami', 'Keterangan'];
+                break;
+            case 'ibu-hamil':
+                data = await getIbuHamil();
+                filename = 'Data_Ibu_Hamil_RT03_RW16';
+                headers = ['No', 'NIK', 'Nama Ibu Hamil', 'Tanggal Lahir', 'Alamat', 'Nama Suami', 'Keterangan'];
+                break;
+            case 'balita':
+                data = await getBalita();
+                filename = 'Data_Balita_RT03_RW16';
+                headers = ['No', 'NIK', 'Nama Balita', 'Tanggal Lahir', 'Alamat', 'Keterangan'];
+                break;
+            default:
+                return;
+        }
+
+        if (data.length === 0) {
+            showToast('Tidak ada data untuk diekspor', 'warning');
             return;
+        }
+
+        // Format dates for export
+        data = data.map(item => ({
+            ...item,
+            tanggalLahir: formatDate(item.tanggalLahir)
+        }));
+
+        // Export to XLSX with title info
+        exportToXLSX(data, filename, headers, exportTitleInfo[type]);
+        showToast('Data berhasil diekspor ke Excel (.xlsx)', 'success');
+    } catch (error) {
+        console.error('Error exporting data:', error);
+        showToast('Gagal mengekspor data: ' + error.message, 'error');
     }
-
-    // Format dates for export
-    data = data.map(item => ({
-        ...item,
-        tanggalLahir: formatDate(item.tanggalLahir)
-    }));
-
-    // Export to XLSX with title info
-    exportToXLSX(data, filename, headers, exportTitleInfo[type]);
-    showToast('Data berhasil diekspor ke Excel (.xlsx)', 'success');
 }
 
 // =============================================
@@ -618,15 +724,15 @@ function initializeSubmenu() {
     }
 }
 
-// Update the DOMContentLoaded to include submenu initialization
-const originalDOMContentLoaded = document.addEventListener;
-document.addEventListener('DOMContentLoaded', () => {
+// =============================================
+// INITIALIZATION
+// =============================================
+
+document.addEventListener('DOMContentLoaded', async () => {
     initializeNavigation();
     initializeMobileMenu();
     initializeModals();
     initializeSearch();
-    updateDashboard();
-    renderAllTables();
     initializeSubmenu();
 
     // Auto-expand MBG submenu on page load
@@ -636,5 +742,10 @@ document.addEventListener('DOMContentLoaded', () => {
         mbgSubmenu.classList.add('show');
         mbgParent.classList.add('expanded');
     }
-});
 
+    // Load data from Supabase
+    await updateDashboard();
+    await renderAllTables();
+
+    console.log('✅ Website terhubung ke Supabase database');
+});
