@@ -736,7 +736,7 @@ async function renderTableBalita(searchTerm = '') {
                 <td data-label="No">${item.no}</td>
                 <td data-label="NIK">${item.nik}</td>
                 <td data-label="Nama">${item.nama}</td>
-                <td data-label="Tanggal Lahir">${formatDate(item.tanggalLahir)} (${calculateAge(item.tanggalLahir)})</td>
+                <td data-label="Tanggal Lahir">${formatDate(item.tanggalLahir)}</td>
                 <td data-label="Alamat">${truncateText(item.alamat, 25)}</td>
                 <td data-label="Keterangan">${truncateText(item.keterangan || '', 20)}</td>
                 <td data-label="Aksi" class="actions">
