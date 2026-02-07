@@ -4,8 +4,19 @@
 const SUPABASE_URL = 'https://uqsyeucgposyqujbebaj.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxc3lldWNncG9zeXF1amJlYmFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0MjMyOTksImV4cCI6MjA4NTk5OTI5OX0.iKn_jp15MQHBIYOfkCJJlH6MD3nVLJN3GNfXuhRt3jQ';
 
-// Initialize Supabase client
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Initialize Supabase client with error handling
+let supabaseClient = null;
+
+function getSupabaseClient() {
+    if (!supabaseClient) {
+        if (typeof window.supabase === 'undefined') {
+            console.error('Supabase library not loaded!');
+            throw new Error('Supabase library not loaded. Please check your internet connection.');
+        }
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    return supabaseClient;
+}
 
 // =============================================
 // IBU MENYUSUI FUNCTIONS
@@ -13,6 +24,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function getIbuMenyusui() {
     try {
+        const supabase = getSupabaseClient();
         const { data, error } = await supabase
             .from('ibu_menyusui')
             .select('*')
@@ -36,6 +48,7 @@ async function getIbuMenyusui() {
 
 async function addIbuMenyusui(data) {
     try {
+        const supabase = getSupabaseClient();
         const { error } = await supabase
             .from('ibu_menyusui')
             .insert({
@@ -57,6 +70,7 @@ async function addIbuMenyusui(data) {
 
 async function updateIbuMenyusui(id, data) {
     try {
+        const supabase = getSupabaseClient();
         const { error } = await supabase
             .from('ibu_menyusui')
             .update({
@@ -79,6 +93,7 @@ async function updateIbuMenyusui(id, data) {
 
 async function deleteIbuMenyusui(id) {
     try {
+        const supabase = getSupabaseClient();
         const { error } = await supabase
             .from('ibu_menyusui')
             .delete()
@@ -98,6 +113,7 @@ async function deleteIbuMenyusui(id) {
 
 async function getIbuHamil() {
     try {
+        const supabase = getSupabaseClient();
         const { data, error } = await supabase
             .from('ibu_hamil')
             .select('*')
@@ -120,6 +136,7 @@ async function getIbuHamil() {
 
 async function addIbuHamil(data) {
     try {
+        const supabase = getSupabaseClient();
         const { error } = await supabase
             .from('ibu_hamil')
             .insert({
@@ -141,6 +158,7 @@ async function addIbuHamil(data) {
 
 async function updateIbuHamil(id, data) {
     try {
+        const supabase = getSupabaseClient();
         const { error } = await supabase
             .from('ibu_hamil')
             .update({
@@ -163,6 +181,7 @@ async function updateIbuHamil(id, data) {
 
 async function deleteIbuHamil(id) {
     try {
+        const supabase = getSupabaseClient();
         const { error } = await supabase
             .from('ibu_hamil')
             .delete()
@@ -182,6 +201,7 @@ async function deleteIbuHamil(id) {
 
 async function getBalita() {
     try {
+        const supabase = getSupabaseClient();
         const { data, error } = await supabase
             .from('balita')
             .select('*')
@@ -203,6 +223,7 @@ async function getBalita() {
 
 async function addBalita(data) {
     try {
+        const supabase = getSupabaseClient();
         const { error } = await supabase
             .from('balita')
             .insert({
@@ -223,6 +244,7 @@ async function addBalita(data) {
 
 async function updateBalita(id, data) {
     try {
+        const supabase = getSupabaseClient();
         const { error } = await supabase
             .from('balita')
             .update({
@@ -244,6 +266,7 @@ async function updateBalita(id, data) {
 
 async function deleteBalita(id) {
     try {
+        const supabase = getSupabaseClient();
         const { error } = await supabase
             .from('balita')
             .delete()
@@ -263,6 +286,7 @@ async function deleteBalita(id) {
 
 async function getStatistics() {
     try {
+        const supabase = getSupabaseClient();
         const [ibuMenyusui, ibuHamil, balita] = await Promise.all([
             supabase.from('ibu_menyusui').select('id', { count: 'exact', head: true }),
             supabase.from('ibu_hamil').select('id', { count: 'exact', head: true }),
@@ -289,3 +313,6 @@ async function getStatistics() {
         };
     }
 }
+
+// Log that supabase.js has loaded successfully
+console.log('✅ supabase.js loaded successfully');
