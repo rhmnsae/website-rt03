@@ -788,10 +788,10 @@ const exportTitleInfo = {
     }
 };
 
-async function exportData(type) {
+async function exportData(type, format = 'excel') {
     let data, filename, headers;
 
-    showToast('Mengambil data untuk ekspor...', 'info');
+    showToast(`Mengambil data untuk ekspor ${format.toUpperCase()}...`, 'info');
 
     try {
         switch (type) {
@@ -825,13 +825,146 @@ async function exportData(type) {
             tanggalLahir: formatDate(item.tanggalLahir)
         }));
 
-        // Export to XLSX with title info
-        exportToXLSX(data, filename, headers, exportTitleInfo[type]);
-        showToast('Data berhasil diekspor ke Excel (.xlsx)', 'success');
+        if (format === 'pdf') {
+            // Export to PDF
+            exportToPDF(data, filename, headers, exportTitleInfo[type], type);
+            showToast('Data berhasil diekspor ke PDF', 'success');
+        } else {
+            // Export to XLSX with title info
+            exportToXLSX(data, filename, headers, exportTitleInfo[type]);
+            showToast('Data berhasil diekspor ke Excel (.xlsx)', 'success');
+        }
     } catch (error) {
         console.error('Error exporting data:', error);
         showToast('Gagal mengekspor data: ' + error.message, 'error');
     }
+}
+
+// Export to PDF using jsPDF
+function exportToPDF(data, filename, headers, titleInfo, type) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('landscape', 'mm', 'a4');
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 15;
+
+    // Colors
+    const primaryColor = [27, 94, 32]; // Green
+    const headerBgColor = [46, 125, 50];
+    const textColor = [33, 33, 33];
+
+    // Header Background
+    doc.setFillColor(...primaryColor);
+    doc.rect(0, 0, pageWidth, 35, 'F');
+
+    // Title
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text(titleInfo.title, pageWidth / 2, 12, { align: 'center' });
+
+    // Subtitles
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(titleInfo.subtitle1, pageWidth / 2, 19, { align: 'center' });
+    doc.text(titleInfo.subtitle2, pageWidth / 2, 24, { align: 'center' });
+    doc.text(titleInfo.subtitle3, pageWidth / 2, 29, { align: 'center' });
+
+    // Prepare table data
+    let tableData = [];
+    if (type === 'balita') {
+        tableData = data.map(item => [
+            item.no,
+            item.nik,
+            item.nama,
+            item.tanggalLahir,
+            item.alamat,
+            item.keterangan || '-'
+        ]);
+    } else {
+        tableData = data.map(item => [
+            item.no,
+            item.nik,
+            item.nama,
+            item.tanggalLahir,
+            item.alamat,
+            item.namaSuami,
+            item.keterangan || '-'
+        ]);
+    }
+
+    // Column widths based on type
+    let columnStyles = {};
+    if (type === 'balita') {
+        columnStyles = {
+            0: { cellWidth: 12 },  // No
+            1: { cellWidth: 40 },  // NIK
+            2: { cellWidth: 50 },  // Nama
+            3: { cellWidth: 30 },  // Tanggal Lahir
+            4: { cellWidth: 80 },  // Alamat
+            5: { cellWidth: 'auto' }  // Keterangan
+        };
+    } else {
+        columnStyles = {
+            0: { cellWidth: 10 },  // No
+            1: { cellWidth: 35 },  // NIK
+            2: { cellWidth: 40 },  // Nama
+            3: { cellWidth: 25 },  // Tanggal Lahir
+            4: { cellWidth: 55 },  // Alamat
+            5: { cellWidth: 35 },  // Nama Suami
+            6: { cellWidth: 'auto' }  // Keterangan
+        };
+    }
+
+    // Generate table
+    doc.autoTable({
+        head: [headers],
+        body: tableData,
+        startY: 40,
+        margin: { left: margin, right: margin },
+        styles: {
+            fontSize: 8,
+            cellPadding: 3,
+            textColor: textColor,
+            lineColor: [200, 200, 200],
+            lineWidth: 0.1
+        },
+        headStyles: {
+            fillColor: headerBgColor,
+            textColor: [255, 255, 255],
+            fontStyle: 'bold',
+            halign: 'center'
+        },
+        alternateRowStyles: {
+            fillColor: [245, 250, 245]
+        },
+        columnStyles: columnStyles,
+        didDrawPage: function (data) {
+            // Footer on each page
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            const date = new Date().toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            });
+            doc.text(`Dicetak pada: ${date}`, margin, pageHeight - 10);
+            doc.text(`Halaman ${doc.internal.getNumberOfPages()}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
+        }
+    });
+
+    // Summary at end
+    const finalY = doc.lastAutoTable.finalY + 10;
+    if (finalY < pageHeight - 30) {
+        doc.setFontSize(9);
+        doc.setTextColor(...textColor);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Total Data: ${data.length} orang`, margin, finalY);
+    }
+
+    // Save PDF
+    doc.save(`${filename}_${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
 // =============================================
