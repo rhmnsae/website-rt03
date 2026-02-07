@@ -151,6 +151,58 @@
                     </div>
                 </div>
 
+                <!-- Storage Info Card -->
+                <div class="content-card storage-info-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-database"></i> Informasi Penyimpanan</h2>
+                        <button class="btn btn-secondary btn-sm" onclick="refreshStorageInfo()">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>Refresh</span>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="storage-grid">
+                            <div class="storage-item">
+                                <div class="storage-icon supabase">
+                                    <i class="fas fa-cloud"></i>
+                                </div>
+                                <div class="storage-details">
+                                    <h4>Database Supabase</h4>
+                                    <p class="storage-desc">Penyimpanan data online (Free tier: 500 MB)</p>
+                                    <div class="storage-stats">
+                                        <span id="supabaseRecords">0 records</span>
+                                        <span class="storage-separator">•</span>
+                                        <span id="supabaseSize">~0 KB</span>
+                                        <span class="storage-separator">•</span>
+                                        <span id="supabaseQuota">dari 500 MB</span>
+                                    </div>
+                                    <div class="storage-bar">
+                                        <div class="storage-bar-fill supabase-bar" id="supabaseBarFill"
+                                            style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="storage-item">
+                                <div class="storage-icon local">
+                                    <i class="fas fa-hdd"></i>
+                                </div>
+                                <div class="storage-details">
+                                    <h4>Penyimpanan Lokal</h4>
+                                    <p class="storage-desc">Cache & data sesi browser</p>
+                                    <div class="storage-stats">
+                                        <span id="localStorageUsed">0 KB</span>
+                                        <span class="storage-separator">•</span>
+                                        <span id="localStorageQuota">dari 5 MB</span>
+                                    </div>
+                                    <div class="storage-bar">
+                                        <div class="storage-bar-fill" id="storageBarFill" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="content-card">
                     <div class="card-header">
                         <h2><i class="fas fa-info-circle"></i> Informasi Program</h2>

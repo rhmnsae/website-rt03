@@ -161,7 +161,6 @@ function exportToXLSX(data, filename, headers, titleInfo) {
     wsData.push([titleInfo.title]);
     wsData.push([titleInfo.subtitle1]);
     wsData.push([titleInfo.subtitle2]);
-    wsData.push([titleInfo.subtitle3]);
     wsData.push([]); // Empty row
     wsData.push([`Tanggal Export: ${formatDate(new Date().toISOString())}`]);
     wsData.push([]); // Empty row
@@ -202,7 +201,6 @@ function exportToXLSX(data, filename, headers, titleInfo) {
         { hpt: 30 }, // Title row
         { hpt: 22 }, // Subtitle 1
         { hpt: 22 }, // Subtitle 2
-        { hpt: 22 }, // Subtitle 3
         { hpt: 10 }, // Empty row
         { hpt: 20 }, // Export date
         { hpt: 10 }, // Empty row
@@ -214,8 +212,7 @@ function exportToXLSX(data, filename, headers, titleInfo) {
         { s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } }, // Title
         { s: { r: 1, c: 0 }, e: { r: 1, c: headers.length - 1 } }, // Subtitle 1
         { s: { r: 2, c: 0 }, e: { r: 2, c: headers.length - 1 } }, // Subtitle 2
-        { s: { r: 3, c: 0 }, e: { r: 3, c: headers.length - 1 } }, // Subtitle 3
-        { s: { r: 5, c: 0 }, e: { r: 5, c: headers.length - 1 } }, // Export date
+        { s: { r: 4, c: 0 }, e: { r: 4, c: headers.length - 1 } }, // Export date
         { s: { r: wsData.length - 1, c: 0 }, e: { r: wsData.length - 1, c: headers.length - 1 } }, // Total
     ];
 
@@ -231,19 +228,19 @@ function exportToXLSX(data, filename, headers, titleInfo) {
             if (R === 0) {
                 // Title row
                 ws[cellAddress].s = styles.title;
-            } else if (R >= 1 && R <= 3) {
+            } else if (R >= 1 && R <= 2) {
                 // Subtitle rows
                 ws[cellAddress].s = styles.subtitle;
-            } else if (R === 5) {
+            } else if (R === 4) {
                 // Export date row
                 ws[cellAddress].s = styles.info;
-            } else if (R === 7) {
+            } else if (R === 6) {
                 // Column headers row
                 ws[cellAddress].s = styles.header;
             } else if (R === wsData.length - 1) {
                 // Footer/total row
                 ws[cellAddress].s = styles.footer;
-            } else if (R > 7 && R < wsData.length - 2) {
+            } else if (R > 6 && R < wsData.length - 2) {
                 // Data rows - alternating colors
                 ws[cellAddress].s = (R % 2 === 0) ? styles.data : styles.dataAlt;
             }

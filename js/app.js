@@ -257,6 +257,146 @@ async function updateDashboard() {
     document.querySelector('[data-tab="ibu-menyusui"] .nav-badge').textContent = stats.ibuMenyusui;
     document.querySelector('[data-tab="ibu-hamil"] .nav-badge').textContent = stats.ibuHamil;
     document.querySelector('[data-tab="balita"] .nav-badge').textContent = stats.balita;
+
+    // Update storage info
+    await updateStorageInfo(stats);
+}
+
+// =============================================
+// STORAGE INFO
+// =============================================
+
+async function updateStorageInfo(stats = null) {
+    try {
+        // Get stats if not provided
+        if (!stats) {
+            stats = await getStatistics();
+        }
+
+        const totalRecords = stats.total;
+
+        // Estimate Supabase storage (rough estimate: ~500 bytes per record average)
+        const estimatedBytes = totalRecords * 500;
+        const supabaseSize = formatBytes(estimatedBytes);
+
+        // Supabase free tier limit: 500MB
+        const supabaseQuotaBytes = 500 * 1024 * 1024;
+        const supabasePercentage = Math.min((estimatedBytes / supabaseQuotaBytes) * 100, 100);
+
+        // Update Supabase info
+        const supabaseRecordsEl = document.getElementById('supabaseRecords');
+        const supabaseSizeEl = document.getElementById('supabaseSize');
+        const supabaseQuotaEl = document.getElementById('supabaseQuota');
+        const supabaseBarFillEl = document.getElementById('supabaseBarFill');
+
+        if (supabaseRecordsEl) {
+            supabaseRecordsEl.textContent = `${totalRecords} records`;
+        }
+        if (supabaseSizeEl) {
+            supabaseSizeEl.textContent = `~${supabaseSize}`;
+        }
+        if (supabaseQuotaEl) {
+            supabaseQuotaEl.textContent = `dari 500 MB`;
+        }
+        if (supabaseBarFillEl) {
+            supabaseBarFillEl.style.width = `${supabasePercentage.toFixed(2)}%`;
+
+            // Change color based on usage
+            if (supabasePercentage > 80) {
+                supabaseBarFillEl.style.background = 'linear-gradient(90deg, #FF9800, #F44336)';
+            } else if (supabasePercentage > 50) {
+                supabaseBarFillEl.style.background = 'linear-gradient(90deg, #FFC107, #FF9800)';
+            } else {
+                supabaseBarFillEl.style.background = 'linear-gradient(90deg, #3ECF8E, #1B9A59)';
+            }
+        }
+
+        // Calculate localStorage usage
+        const localStorageInfo = getLocalStorageInfo();
+
+        const localStorageUsedEl = document.getElementById('localStorageUsed');
+        const localStorageQuotaEl = document.getElementById('localStorageQuota');
+        const storageBarFillEl = document.getElementById('storageBarFill');
+
+        if (localStorageUsedEl) {
+            localStorageUsedEl.textContent = localStorageInfo.usedFormatted;
+        }
+        if (localStorageQuotaEl) {
+            localStorageQuotaEl.textContent = `dari ${localStorageInfo.quotaFormatted}`;
+        }
+        if (storageBarFillEl) {
+            storageBarFillEl.style.width = `${localStorageInfo.percentage}%`;
+
+            // Change color based on usage
+            if (localStorageInfo.percentage > 80) {
+                storageBarFillEl.style.background = 'linear-gradient(90deg, #FF9800, #F44336)';
+            } else if (localStorageInfo.percentage > 50) {
+                storageBarFillEl.style.background = 'linear-gradient(90deg, #FFC107, #FF9800)';
+            } else {
+                storageBarFillEl.style.background = 'linear-gradient(90deg, var(--secondary), var(--accent))';
+            }
+        }
+
+    } catch (error) {
+        console.error('Error updating storage info:', error);
+    }
+}
+
+function getLocalStorageInfo() {
+    let totalBytes = 0;
+
+    try {
+        for (let key in localStorage) {
+            if (localStorage.hasOwnProperty(key)) {
+                // Each character in JavaScript string is 2 bytes (UTF-16)
+                totalBytes += (localStorage[key].length + key.length) * 2;
+            }
+        }
+    } catch (e) {
+        console.error('Error calculating localStorage:', e);
+    }
+
+    // localStorage quota is typically 5MB
+    const quotaBytes = 5 * 1024 * 1024;
+    const percentage = Math.min((totalBytes / quotaBytes) * 100, 100);
+
+    return {
+        usedBytes: totalBytes,
+        usedFormatted: formatBytes(totalBytes),
+        quotaBytes: quotaBytes,
+        quotaFormatted: formatBytes(quotaBytes),
+        percentage: percentage.toFixed(1)
+    };
+}
+
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+async function refreshStorageInfo() {
+    const refreshBtn = document.querySelector('.storage-info-card .btn');
+    if (refreshBtn) {
+        refreshBtn.disabled = true;
+        refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Memuat...</span>';
+    }
+
+    try {
+        await updateStorageInfo();
+        showToast('Informasi penyimpanan diperbarui', 'success');
+    } catch (error) {
+        showToast('Gagal memperbarui informasi penyimpanan', 'error');
+    } finally {
+        if (refreshBtn) {
+            refreshBtn.disabled = false;
+            refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> <span>Refresh</span>';
+        }
+    }
 }
 
 // =============================================
@@ -771,43 +911,38 @@ const exportTitleInfo = {
     'ibu-menyusui': {
         title: 'DATA IBU MENYUSUI PENERIMA PROGRAM MAKANAN BERGIZI GRATIS',
         subtitle1: 'POSYANDU MELATI 16 KELURAHAN MANGGAHANG KECAMATAN BALEENDAH KABUPATEN BANDUNG',
-        subtitle2: 'SATUAN PELAYANAN PEMENUHAN GIZI (SPPG) MANGGAHANG 05',
-        subtitle3: 'RT 03 / RW 016 KAMPUNG SINDANGSARI'
+        subtitle2: 'SATUAN PELAYANAN PEMENUHAN GIZI (SPPG) MANGGAHANG 05'
     },
     'ibu-hamil': {
         title: 'DATA IBU HAMIL PENERIMA PROGRAM MAKANAN BERGIZI GRATIS',
         subtitle1: 'POSYANDU MELATI 16 KELURAHAN MANGGAHANG KECAMATAN BALEENDAH KABUPATEN BANDUNG',
-        subtitle2: 'SATUAN PELAYANAN PEMENUHAN GIZI (SPPG) MANGGAHANG 05',
-        subtitle3: 'RT 03 / RW 016 KAMPUNG SINDANGSARI'
+        subtitle2: 'SATUAN PELAYANAN PEMENUHAN GIZI (SPPG) MANGGAHANG 05'
     },
     'balita': {
         title: 'DATA BALITA PENERIMA PROGRAM MAKANAN BERGIZI GRATIS',
         subtitle1: 'POSYANDU MELATI 16 KELURAHAN MANGGAHANG KECAMATAN BALEENDAH KABUPATEN BANDUNG',
-        subtitle2: 'SATUAN PELAYANAN PEMENUHAN GIZI (SPPG) MANGGAHANG 05',
-        subtitle3: 'RT 03 / RW 016 KAMPUNG SINDANGSARI'
+        subtitle2: 'SATUAN PELAYANAN PEMENUHAN GIZI (SPPG) MANGGAHANG 05'
     }
 };
 
 async function exportData(type, format = 'excel') {
     let data, filename, headers;
 
-    showToast(`Mengambil data untuk ekspor ${format.toUpperCase()}...`, 'info');
-
     try {
         switch (type) {
             case 'ibu-menyusui':
                 data = await getIbuMenyusui();
-                filename = 'Data_Ibu_Menyusui_RT03_RW16';
+                filename = 'Data_Ibu_Menyusui_RW16';
                 headers = ['No', 'NIK', 'Nama Ibu Menyusui', 'Tanggal Lahir', 'Alamat', 'Nama Suami', 'Keterangan'];
                 break;
             case 'ibu-hamil':
                 data = await getIbuHamil();
-                filename = 'Data_Ibu_Hamil_RT03_RW16';
+                filename = 'Data_Ibu_Hamil_RW16';
                 headers = ['No', 'NIK', 'Nama Ibu Hamil', 'Tanggal Lahir', 'Alamat', 'Nama Suami', 'Keterangan'];
                 break;
             case 'balita':
                 data = await getBalita();
-                filename = 'Data_Balita_RT03_RW16';
+                filename = 'Data_Balita_RW16';
                 headers = ['No', 'NIK', 'Nama Balita', 'Tanggal Lahir', 'Alamat', 'Keterangan'];
                 break;
             default:
@@ -826,10 +961,17 @@ async function exportData(type, format = 'excel') {
         }));
 
         if (format === 'pdf') {
-            // Export to PDF
-            exportToPDF(data, filename, headers, exportTitleInfo[type], type);
+            // Show orientation selection modal
+            const orientation = await showPDFOrientationModal();
+            if (!orientation) {
+                return; // User cancelled
+            }
+
+            showToast(`Mengekspor ke PDF (${orientation === 'portrait' ? 'Portrait' : 'Landscape'})...`, 'info');
+            exportToPDF(data, filename, headers, exportTitleInfo[type], type, orientation);
             showToast('Data berhasil diekspor ke PDF', 'success');
         } else {
+            showToast('Mengambil data untuk ekspor Excel...', 'info');
             // Export to XLSX with title info
             exportToXLSX(data, filename, headers, exportTitleInfo[type]);
             showToast('Data berhasil diekspor ke Excel (.xlsx)', 'success');
@@ -841,35 +983,32 @@ async function exportData(type, format = 'excel') {
 }
 
 // Export to PDF using jsPDF
-function exportToPDF(data, filename, headers, titleInfo, type) {
+function exportToPDF(data, filename, headers, titleInfo, type, orientation = 'landscape') {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('landscape', 'mm', 'a4');
+    const doc = new jsPDF(orientation, 'mm', 'a4');
 
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 15;
 
     // Colors
-    const primaryColor = [27, 94, 32]; // Green
     const headerBgColor = [46, 125, 50];
     const textColor = [33, 33, 33];
 
-    // Header Background
-    doc.setFillColor(...primaryColor);
-    doc.rect(0, 0, pageWidth, 35, 'F');
-
-    // Title
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(14);
+    // Title - Black bold text, smaller for portrait mode
+    doc.setTextColor(0, 0, 0);
+    const titleFontSize = orientation === 'portrait' ? 9 : 12;
+    doc.setFontSize(titleFontSize);
     doc.setFont('helvetica', 'bold');
-    doc.text(titleInfo.title, pageWidth / 2, 12, { align: 'center' });
 
-    // Subtitles
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.text(titleInfo.subtitle1, pageWidth / 2, 19, { align: 'center' });
-    doc.text(titleInfo.subtitle2, pageWidth / 2, 24, { align: 'center' });
-    doc.text(titleInfo.subtitle3, pageWidth / 2, 29, { align: 'center' });
+    // Adjust vertical positioning for portrait (smaller font = tighter spacing)
+    const titleY = orientation === 'portrait' ? 12 : 12;
+    const subtitle1Y = orientation === 'portrait' ? 16 : 18;
+    const subtitle2Y = orientation === 'portrait' ? 20 : 24;
+
+    doc.text(titleInfo.title, pageWidth / 2, titleY, { align: 'center' });
+    doc.text(titleInfo.subtitle1, pageWidth / 2, subtitle1Y, { align: 'center' });
+    doc.text(titleInfo.subtitle2, pageWidth / 2, subtitle2Y, { align: 'center' });
 
     // Prepare table data
     let tableData = [];
@@ -894,38 +1033,63 @@ function exportToPDF(data, filename, headers, titleInfo, type) {
         ]);
     }
 
-    // Column widths based on type
+    // Column widths based on type and orientation
     let columnStyles = {};
-    if (type === 'balita') {
-        columnStyles = {
-            0: { cellWidth: 12 },  // No
-            1: { cellWidth: 40 },  // NIK
-            2: { cellWidth: 50 },  // Nama
-            3: { cellWidth: 30 },  // Tanggal Lahir
-            4: { cellWidth: 80 },  // Alamat
-            5: { cellWidth: 'auto' }  // Keterangan
-        };
+    if (orientation === 'portrait') {
+        // Portrait mode - narrower columns
+        if (type === 'balita') {
+            columnStyles = {
+                0: { cellWidth: 8 },   // No
+                1: { cellWidth: 28 },  // NIK
+                2: { cellWidth: 35 },  // Nama
+                3: { cellWidth: 22 },  // Tanggal Lahir
+                4: { cellWidth: 50 },  // Alamat
+                5: { cellWidth: 'auto' }  // Keterangan
+            };
+        } else {
+            columnStyles = {
+                0: { cellWidth: 8 },   // No
+                1: { cellWidth: 26 },  // NIK
+                2: { cellWidth: 28 },  // Nama
+                3: { cellWidth: 20 },  // Tanggal Lahir
+                4: { cellWidth: 35 },  // Alamat
+                5: { cellWidth: 25 },  // Nama Suami
+                6: { cellWidth: 'auto' }  // Keterangan
+            };
+        }
     } else {
-        columnStyles = {
-            0: { cellWidth: 10 },  // No
-            1: { cellWidth: 35 },  // NIK
-            2: { cellWidth: 40 },  // Nama
-            3: { cellWidth: 25 },  // Tanggal Lahir
-            4: { cellWidth: 55 },  // Alamat
-            5: { cellWidth: 35 },  // Nama Suami
-            6: { cellWidth: 'auto' }  // Keterangan
-        };
+        // Landscape mode - wider columns
+        if (type === 'balita') {
+            columnStyles = {
+                0: { cellWidth: 12 },  // No
+                1: { cellWidth: 40 },  // NIK
+                2: { cellWidth: 50 },  // Nama
+                3: { cellWidth: 30 },  // Tanggal Lahir
+                4: { cellWidth: 80 },  // Alamat
+                5: { cellWidth: 'auto' }  // Keterangan
+            };
+        } else {
+            columnStyles = {
+                0: { cellWidth: 10 },  // No
+                1: { cellWidth: 35 },  // NIK
+                2: { cellWidth: 40 },  // Nama
+                3: { cellWidth: 25 },  // Tanggal Lahir
+                4: { cellWidth: 55 },  // Alamat
+                5: { cellWidth: 35 },  // Nama Suami
+                6: { cellWidth: 'auto' }  // Keterangan
+            };
+        }
     }
 
     // Generate table
     doc.autoTable({
         head: [headers],
         body: tableData,
-        startY: 40,
+        startY: 32,
         margin: { left: margin, right: margin },
         styles: {
-            fontSize: 8,
-            cellPadding: 3,
+            fontSize: orientation === 'portrait' ? 7 : 8,
+            cellPadding: orientation === 'portrait' ? 2 : 3,
             textColor: textColor,
             lineColor: [200, 200, 200],
             lineWidth: 0.1
@@ -963,8 +1127,64 @@ function exportToPDF(data, filename, headers, titleInfo, type) {
         doc.text(`Total Data: ${data.length} orang`, margin, finalY);
     }
 
-    // Save PDF
-    doc.save(`${filename}_${new Date().toISOString().slice(0, 10)}.pdf`);
+    // Save PDF with orientation suffix
+    const orientationSuffix = orientation === 'portrait' ? '_Portrait' : '_Landscape';
+    doc.save(`${filename}${orientationSuffix}_${new Date().toISOString().slice(0, 10)}.pdf`);
+}
+
+// Show PDF orientation selection modal
+function showPDFOrientationModal(callback) {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'modal show';
+        modal.id = 'pdfOrientationModal';
+        modal.innerHTML = `
+            <div class="modal-backdrop"></div>
+            <div class="modal-content" style="max-width: 400px;">
+                <div class="modal-header">
+                    <h3><i class="fas fa-file-pdf"></i> Pilih Orientasi PDF</h3>
+                </div>
+                <div class="modal-body" style="padding: 1.5rem; text-align: center;">
+                    <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">Pilih orientasi halaman untuk dokumen PDF:</p>
+                    <div style="display: flex; gap: 1rem; justify-content: center;">
+                        <button id="btnPortrait" class="btn btn-secondary" style="flex: 1; padding: 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-file-alt" style="font-size: 2rem;"></i>
+                            <span>Portrait</span>
+                            <small style="color: var(--text-muted);">Vertikal</small>
+                        </button>
+                        <button id="btnLandscape" class="btn btn-primary" style="flex: 1; padding: 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-file" style="font-size: 2rem; transform: rotate(90deg);"></i>
+                            <span>Landscape</span>
+                            <small style="color: rgba(255,255,255,0.7);">Horizontal</small>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        document.body.style.overflow = 'hidden';
+
+        const cleanup = () => {
+            modal.remove();
+            document.body.style.overflow = '';
+        };
+
+        modal.querySelector('#btnPortrait').addEventListener('click', () => {
+            cleanup();
+            resolve('portrait');
+        });
+
+        modal.querySelector('#btnLandscape').addEventListener('click', () => {
+            cleanup();
+            resolve('landscape');
+        });
+
+        modal.querySelector('.modal-backdrop').addEventListener('click', () => {
+            cleanup();
+            resolve(null);
+        });
+    });
 }
 
 // =============================================
