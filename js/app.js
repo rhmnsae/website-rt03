@@ -1,6 +1,125 @@
 // Main Application Logic for Website Rukun Tetangga RT03/RW16
 // Using Supabase Database
 
+// =============================================
+// AUTHENTICATION
+// =============================================
+
+// Login credentials (in production, use proper authentication)
+const AUTH_USERNAME = 'admin';
+const AUTH_PASSWORD = 'bandung123';
+const AUTH_STORAGE_KEY = 'rt03_auth_session';
+
+// Check if user is logged in
+let isLoggedIn = false;
+
+function checkAuth() {
+    const session = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (session) {
+        try {
+            const sessionData = JSON.parse(session);
+            // Check if session is valid (not expired - 30 days)
+            const now = Date.now();
+            const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+            if (sessionData.timestamp && (now - sessionData.timestamp) < thirtyDays) {
+                isLoggedIn = true;
+                return true;
+            }
+        } catch (e) {
+            console.error('Invalid session data');
+        }
+    }
+    return false;
+}
+
+function handleLogin(event) {
+    event.preventDefault();
+
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const rememberMe = document.getElementById('rememberMe').checked;
+    const loginButton = document.getElementById('loginButton');
+
+    // Disable button and show loading
+    loginButton.disabled = true;
+    loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memverifikasi...';
+
+    // Simulate network delay for better UX
+    setTimeout(() => {
+        if (username === AUTH_USERNAME && password === AUTH_PASSWORD) {
+            // Login successful
+            isLoggedIn = true;
+
+            if (rememberMe) {
+                // Save session to localStorage
+                const sessionData = {
+                    username: username,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(sessionData));
+            }
+
+            // Hide login screen
+            document.getElementById('loginScreen').classList.add('hidden');
+            showToast('Selamat datang, Admin!', 'success');
+
+            // Load data
+            initializeApp();
+        } else {
+            // Login failed
+            showToast('Username atau password salah!', 'error');
+            loginButton.disabled = false;
+            loginButton.innerHTML = '<i class="fas fa-sign-in-alt"></i> Masuk';
+
+            // Shake animation on login card
+            const loginCard = document.querySelector('.login-card');
+            loginCard.style.animation = 'none';
+            setTimeout(() => {
+                loginCard.style.animation = 'shake 0.5s ease';
+            }, 10);
+        }
+    }, 800);
+}
+
+function showLogoutConfirm() {
+    // Close mobile menu first if open
+    closeMobileMenu();
+    openModal('logoutModal');
+}
+
+function performLogout() {
+    // Clear session
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    isLoggedIn = false;
+
+    // Close modal
+    closeModal('logoutModal');
+
+    // Show login screen
+    document.getElementById('loginScreen').classList.remove('hidden');
+
+    // Clear form
+    document.getElementById('loginUsername').value = '';
+    document.getElementById('loginPassword').value = '';
+
+    showToast('Anda telah keluar dari sistem', 'info');
+}
+
+function togglePasswordVisibility() {
+    const passwordInput = document.getElementById('loginPassword');
+    const toggleIcon = document.getElementById('passwordToggleIcon');
+
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
+}
+
 // Current active tab
 let currentTab = 'dashboard';
 let editingId = null;
@@ -728,13 +847,7 @@ function initializeSubmenu() {
 // INITIALIZATION
 // =============================================
 
-document.addEventListener('DOMContentLoaded', async () => {
-    initializeNavigation();
-    initializeMobileMenu();
-    initializeModals();
-    initializeSearch();
-    initializeSubmenu();
-
+async function initializeApp() {
     // Auto-expand MBG submenu on page load
     const mbgSubmenu = document.getElementById('mbg-submenu');
     const mbgParent = document.getElementById('navMBG');
@@ -748,4 +861,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     await renderAllTables();
 
     console.log('✅ Website terhubung ke Supabase database');
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize UI components first
+    initializeNavigation();
+    initializeMobileMenu();
+    initializeModals();
+    initializeSearch();
+    initializeSubmenu();
+
+    // Check if user is already logged in
+    if (checkAuth()) {
+        // Hide login screen and load app
+        document.getElementById('loginScreen').classList.add('hidden');
+        await initializeApp();
+    } else {
+        // Show login screen
+        document.getElementById('loginScreen').classList.remove('hidden');
+    }
 });

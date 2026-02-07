@@ -90,6 +90,10 @@
             </nav>
 
             <div class="sidebar-footer">
+                <button class="btn btn-logout" onclick="showLogoutConfirm()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
                 <p>
                     Kabupaten Bandung, Jawa Barat<br>
                     Kode Pos 40375
@@ -459,6 +463,69 @@
                 <button class="btn btn-danger" id="confirmYes">
                     <i class="fas fa-trash"></i> Hapus
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div class="modal" id="logoutModal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="confirm-icon logout-icon">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <h3 style="margin-bottom: 1rem;">Konfirmasi Logout</h3>
+                <p>Apakah Anda yakin ingin keluar dari sistem?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('logoutModal')">Batal</button>
+                <button class="btn btn-danger" onclick="performLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="login-logo">🏘️</div>
+                    <h1>RT03/RW016</h1>
+                    <p>Kampung Sindangsari<br>Sistem Informasi Data Penerima MBG</p>
+                </div>
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Username</label>
+                        <input type="text" class="form-control" id="loginUsername" placeholder="Masukkan username"
+                            required autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" class="form-control" id="loginPassword"
+                                placeholder="Masukkan password" required autocomplete="current-password">
+                            <button type="button" class="password-toggle" onclick="togglePasswordVisibility()">
+                                <i class="fas fa-eye" id="passwordToggleIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group remember-me">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="rememberMe" checked>
+                            <span class="checkmark"></span>
+                            <span>Ingat saya</span>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-login" id="loginButton">
+                        <i class="fas fa-sign-in-alt"></i> Masuk
+                    </button>
+                </form>
+                <div class="login-footer">
+                    <p>© 2026 RT03/RW016 Kampung Sindangsari</p>
+                </div>
             </div>
         </div>
     </div>

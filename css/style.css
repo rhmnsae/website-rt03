@@ -965,6 +965,291 @@ textarea.form-control {
 }
 
 /* =============================================
+   LOGIN SCREEN
+   ============================================= */
+
+.login-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-primary);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-md);
+}
+
+.login-screen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(circle at 20% 80%, rgba(0, 200, 83, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(46, 125, 50, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(27, 94, 32, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.login-screen.hidden {
+    display: none;
+}
+
+.login-container {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+}
+
+.login-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-2xl);
+    box-shadow: var(--shadow-lg), 0 0 60px rgba(0, 200, 83, 0.1);
+    animation: loginSlideIn 0.5s ease;
+}
+
+@keyframes loginSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.login-logo {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, var(--secondary), var(--accent));
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--spacing-lg);
+    font-size: 3rem;
+    box-shadow: 0 10px 40px rgba(0, 200, 83, 0.3);
+    animation: logoPulse 2s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 10px 40px rgba(0, 200, 83, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 10px 60px rgba(0, 200, 83, 0.5);
+    }
+}
+
+.login-header h1 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--text-primary), var(--secondary-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: var(--spacing-sm);
+}
+
+.login-header p {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.login-card .form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.login-card .form-group label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.login-card .form-group label i {
+    color: var(--secondary);
+    width: 16px;
+}
+
+.login-card .form-control {
+    background: var(--surface);
+    border: 2px solid var(--glass-border);
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: 1rem;
+    transition: all var(--transition-fast);
+}
+
+.login-card .form-control:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(0, 200, 83, 0.15);
+}
+
+/* Password Toggle */
+.password-input-wrapper {
+    position: relative;
+}
+
+.password-input-wrapper .form-control {
+    padding-right: 50px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 50px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color var(--transition-fast);
+}
+
+.password-toggle:hover {
+    color: var(--accent);
+}
+
+/* Remember Me Checkbox */
+.remember-me {
+    margin-bottom: var(--spacing-xl) !important;
+}
+
+.checkbox-label {
+    display: flex !important;
+    align-items: center;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+    display: none;
+}
+
+.checkmark {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    position: relative;
+    transition: all var(--transition-fast);
+}
+
+.checkbox-label input[type="checkbox"]:checked+.checkmark {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.checkmark::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 6px;
+    height: 12px;
+    border: solid var(--primary-dark);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.checkbox-label input[type="checkbox"]:checked+.checkmark::after {
+    opacity: 1;
+}
+
+/* Login Button */
+.btn-login {
+    width: 100%;
+    background: linear-gradient(135deg, var(--secondary), var(--accent));
+    color: var(--primary-dark);
+    font-size: 1rem;
+    font-weight: 700;
+    padding: var(--spacing-md) var(--spacing-lg);
+    min-height: 52px;
+    box-shadow: 0 8px 30px rgba(0, 200, 83, 0.3);
+    transition: all var(--transition-normal);
+}
+
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 200, 83, 0.4);
+}
+
+.btn-login:active {
+    transform: translateY(0);
+}
+
+.btn-login:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.login-footer {
+    text-align: center;
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--glass-border);
+}
+
+.login-footer p {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+/* Logout Button in Sidebar */
+.btn-logout {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    transition: all var(--transition-fast);
+}
+
+.btn-logout:hover {
+    background: rgba(255, 82, 82, 0.1);
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+/* Logout Modal Icon */
+.logout-icon {
+    background: linear-gradient(135deg, var(--danger), #C62828) !important;
+}
+
+/* =============================================
    RESPONSIVE DESIGN
    ============================================= */
 
