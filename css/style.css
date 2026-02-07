@@ -1043,12 +1043,13 @@ textarea.form-control {
 }
 
 .login-rt {
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-weight: 800;
     background: linear-gradient(135deg, var(--text-primary), var(--secondary-light));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    text-shadow: 0 0 30px rgba(0, 200, 83, 0.3);
 }
 
 .login-logo {
@@ -1397,33 +1398,46 @@ textarea.form-control {
         font-size: 1.5rem;
     }
 
+    /* Card Header - OPTIMIZED FOR ANDROID */
     .card-header {
         flex-direction: column;
         align-items: stretch;
         gap: var(--spacing-md);
         padding: var(--spacing-md);
+        background: rgba(30, 70, 40, 0.3);
     }
 
     .card-header h2 {
         font-size: 1rem;
+        text-align: center;
+        padding-bottom: var(--spacing-sm);
+        border-bottom: 1px solid var(--glass-border);
     }
 
     .card-actions {
         width: 100%;
         display: flex;
-        flex-wrap: wrap;
+        flex-direction: column;
         gap: var(--spacing-sm);
     }
 
     .card-actions .search-box {
         order: -1;
-        flex: 1 1 100%;
+        flex: none;
+        width: 100%;
         max-width: 100%;
     }
 
     .card-actions .btn {
-        flex: 1 1 calc(50% - var(--spacing-sm) / 2);
-        min-width: 0;
+        flex: none;
+        width: 100%;
+        min-height: 48px;
+        justify-content: center;
+    }
+
+    /* Button row for Tambah and Export */
+    .card-actions .btn+.btn {
+        margin-top: 0;
     }
 
     .search-box {
@@ -1433,9 +1447,16 @@ textarea.form-control {
     }
 
     .search-box input {
-        min-height: 48px;
+        min-height: 50px;
         font-size: 16px;
+        border-radius: var(--radius-md);
+        padding-left: 50px;
         /* Prevents iOS zoom */
+    }
+
+    .search-box i {
+        left: var(--spacing-lg);
+        font-size: 1rem;
     }
 
     .form-row {
@@ -1504,15 +1525,129 @@ textarea.form-control {
         flex: 1;
     }
 
+    /* Modal - OPTIMIZED FOR ANDROID DATA ENTRY */
+    .modal {
+        padding: 0;
+        align-items: flex-end;
+    }
+
     .modal-content {
-        max-height: 100vh;
+        max-height: 95vh;
+        width: 100%;
+        max-width: 100%;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        animation: mobileModalSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+    }
+
+    @keyframes mobileModalSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modal-header {
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-bottom: 1px solid var(--glass-border);
+        flex-shrink: 0;
+        position: sticky;
+        top: 0;
+        background: var(--bg-secondary);
+        z-index: 10;
+    }
+
+    .modal-header h3 {
+        font-size: 1rem;
+    }
+
+    .modal-close {
+        width: 44px;
+        height: 44px;
+    }
+
+    .modal-body {
+        padding: var(--spacing-lg);
+        overflow-y: auto;
+        flex: 1;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .modal-body .form-group {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .modal-body .form-group label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: var(--spacing-sm);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+    }
+
+    .modal-body .form-control {
+        font-size: 16px;
+        min-height: 52px;
+        padding: var(--spacing-md);
         border-radius: var(--radius-md);
+        background: var(--surface);
+        border: 2px solid var(--glass-border);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .modal-body .form-control:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(0, 200, 83, 0.15);
+    }
+
+    .modal-body textarea.form-control {
+        min-height: 100px;
+        resize: none;
+    }
+
+    .modal-body .form-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .modal-footer {
+        padding: var(--spacing-md) var(--spacing-lg);
+        padding-bottom: max(var(--spacing-lg), env(safe-area-inset-bottom, 16px));
+        border-top: 1px solid var(--glass-border);
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        background: var(--bg-secondary);
+        position: sticky;
+        bottom: 0;
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+        min-height: 50px;
+        justify-content: center;
+        font-size: 0.95rem;
+    }
+
+    .modal-footer .btn-success {
+        order: -1;
     }
 
     .toast {
         left: var(--spacing-md);
         right: var(--spacing-md);
+        bottom: var(--spacing-lg);
         min-width: auto;
+        border-radius: var(--radius-md);
     }
 }
 
@@ -1537,8 +1672,23 @@ textarea.form-control {
         font-size: 1.5rem;
     }
 
-    .modal-footer {
-        flex-direction: column;
+    /* Smaller screen modal adjustments */
+    .modal-header h3 {
+        font-size: 0.95rem;
+    }
+
+    .modal-body .form-group label {
+        font-size: 0.85rem;
+    }
+
+    .modal-body .form-control {
+        min-height: 48px;
+        font-size: 16px;
+    }
+
+    .modal-footer .btn {
+        min-height: 48px;
+        font-size: 0.9rem;
     }
 }
 
@@ -1875,20 +2025,59 @@ textarea.form-control {
 }
 
 /* =============================================
-   ENHANCED LOGOUT MODAL
+   ENHANCED LOGOUT MODAL - PREMIUM DESIGN
    ============================================= */
 
 .logout-modal .modal-backdrop {
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: rgba(0, 0, 0, 0.7);
 }
 
 .logout-modal-content {
-    max-width: 380px;
+    max-width: 400px;
     text-align: center;
-    background: linear-gradient(180deg, var(--bg-secondary) 0%, rgba(13, 63, 21, 0.95) 100%);
-    border: 1px solid rgba(255, 82, 82, 0.2);
+    background: linear-gradient(180deg,
+            rgba(17, 41, 21, 0.98) 0%,
+            rgba(13, 63, 21, 0.95) 50%,
+            rgba(10, 31, 13, 0.98) 100%);
+    border: 1px solid rgba(255, 82, 82, 0.3);
+    border-radius: var(--radius-xl);
     animation: logoutModalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.6),
+        0 0 60px rgba(239, 83, 80, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Decorative corner accents */
+.logout-modal-content::before,
+.logout-modal-content::after {
+    content: '';
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.logout-modal-content::before {
+    top: -50px;
+    right: -50px;
+    background: radial-gradient(circle, rgba(239, 83, 80, 0.2) 0%, transparent 70%);
+}
+
+.logout-modal-content::after {
+    bottom: -50px;
+    left: -50px;
+    background: radial-gradient(circle, rgba(239, 83, 80, 0.15) 0%, transparent 70%);
+}
+
+.logout-modal .modal-body {
+    padding: var(--spacing-2xl) var(--spacing-xl);
+    position: relative;
 }
 
 @keyframes logoutModalSlideIn {
@@ -1905,9 +2094,9 @@ textarea.form-control {
 
 .logout-icon-wrapper {
     position: relative;
-    width: 100px;
-    height: 100px;
-    margin: 0 auto var(--spacing-lg);
+    width: 120px;
+    height: 120px;
+    margin: 0 auto var(--spacing-xl);
 }
 
 .logout-icon-circle {
@@ -1915,44 +2104,76 @@ textarea.form-control {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(135deg, #EF5350, #C62828);
+    width: 90px;
+    height: 90px;
+    background: linear-gradient(135deg, #FF6B6B 0%, #EF5350 50%, #C62828 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
+    font-size: 2.5rem;
     color: white;
-    box-shadow: 0 8px 30px rgba(239, 83, 80, 0.4);
+    box-shadow:
+        0 10px 40px rgba(239, 83, 80, 0.5),
+        inset 0 2px 0 rgba(255, 255, 255, 0.2);
     z-index: 2;
 }
 
 .logout-icon-circle i {
-    animation: logoutIconBounce 1s ease-in-out infinite;
+    animation: logoutIconBounce 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 @keyframes logoutIconBounce {
 
     0%,
     100% {
-        transform: translateX(0);
+        transform: translateX(0) rotate(0deg);
     }
 
-    50% {
-        transform: translateX(3px);
+    25% {
+        transform: translateX(4px) rotate(5deg);
+    }
+
+    75% {
+        transform: translateX(-2px) rotate(-3deg);
     }
 }
 
+/* Multiple pulsing rings */
 .logout-icon-ring {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    border: 3px solid rgba(239, 83, 80, 0.3);
+    border: 3px solid rgba(239, 83, 80, 0.4);
     border-radius: 50%;
-    animation: logoutRingPulse 1.5s ease-in-out infinite;
+    animation: logoutRingPulse 2s ease-in-out infinite;
+}
+
+.logout-icon-wrapper::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border: 2px solid rgba(239, 83, 80, 0.2);
+    border-radius: 50%;
+    animation: logoutRingPulse 2s ease-in-out infinite 0.5s;
+}
+
+.logout-icon-wrapper::after {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    border: 1px solid rgba(239, 83, 80, 0.1);
+    border-radius: 50%;
+    animation: logoutRingPulse 2s ease-in-out infinite 1s;
 }
 
 @keyframes logoutRingPulse {
@@ -1960,63 +2181,111 @@ textarea.form-control {
     0%,
     100% {
         transform: scale(1);
-        opacity: 0.5;
+        opacity: 0.6;
     }
 
     50% {
-        transform: scale(1.15);
+        transform: scale(1.1);
         opacity: 0.2;
     }
 }
 
 .logout-title {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: var(--spacing-sm);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .logout-message {
     color: var(--text-secondary);
-    font-size: 0.9rem;
-    line-height: 1.6;
-    margin-bottom: var(--spacing-lg);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin-bottom: 0;
+    max-width: 280px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Warning dots decoration */
+.logout-modal .modal-body::after {
+    content: '• • •';
+    display: block;
+    margin-top: var(--spacing-lg);
+    color: rgba(239, 83, 80, 0.5);
+    font-size: 1rem;
+    letter-spacing: 8px;
+    animation: dotsPulse 2s ease-in-out infinite;
+}
+
+@keyframes dotsPulse {
+
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
 }
 
 .logout-modal-footer {
     justify-content: center;
     gap: var(--spacing-md);
-    border-top: 1px solid rgba(255, 82, 82, 0.1);
-    padding: var(--spacing-lg);
+    border-top: 1px solid rgba(255, 82, 82, 0.15);
+    padding: var(--spacing-lg) var(--spacing-xl);
+    background: rgba(0, 0, 0, 0.2);
 }
 
 .btn-cancel-logout {
-    background: transparent;
-    border: 2px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.2);
     color: var(--text-secondary);
-    padding: var(--spacing-sm) var(--spacing-xl);
+    padding: 12px 24px;
     font-weight: 600;
+    border-radius: var(--radius-md);
     transition: all 0.3s ease;
+    min-width: 130px;
 }
 
 .btn-cancel-logout:hover {
     border-color: var(--secondary);
     color: var(--secondary);
-    background: rgba(76, 175, 80, 0.1);
+    background: rgba(76, 175, 80, 0.15);
+    transform: translateY(-2px);
 }
 
 .btn-confirm-logout {
-    background: linear-gradient(135deg, #EF5350, #C62828);
+    background: linear-gradient(135deg, #FF6B6B, #EF5350, #C62828);
+    background-size: 200% 200%;
     color: white;
-    padding: var(--spacing-sm) var(--spacing-xl);
+    padding: 12px 24px;
     font-weight: 600;
-    box-shadow: 0 4px 20px rgba(239, 83, 80, 0.3);
+    border-radius: var(--radius-md);
+    box-shadow: 0 6px 25px rgba(239, 83, 80, 0.4);
     transition: all 0.3s ease;
+    min-width: 130px;
+    border: none;
+    animation: btnGradientShift 3s ease infinite;
+}
+
+@keyframes btnGradientShift {
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
 }
 
 .btn-confirm-logout:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(239, 83, 80, 0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 35px rgba(239, 83, 80, 0.5);
 }
 
 /* =============================================
@@ -2059,62 +2328,98 @@ textarea.form-control {
         margin-top: auto;
     }
 
-    /* Login screen mobile - COMPACT SIMPLE */
+    /* Login screen mobile - OPTIMIZED FOR ANDROID */
+    .login-bg-animation {
+        /* Disable complex animations on mobile for performance */
+        display: none;
+    }
+
+    .login-screen::before {
+        /* Simpler background for mobile */
+        background: radial-gradient(circle at 50% 50%, rgba(0, 200, 83, 0.1) 0%, transparent 60%);
+    }
+
     .login-card {
-        padding: var(--spacing-lg);
-        margin: var(--spacing-sm);
-        max-width: calc(100vw - 24px);
+        padding: var(--spacing-xl);
+        margin: var(--spacing-md);
+        max-width: calc(100vw - 32px);
+        /* Smooth animation with GPU acceleration */
+        animation: mobileLoginFadeIn 0.3s ease-out;
+        will-change: transform, opacity;
+    }
+
+    @keyframes mobileLoginFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .login-header {
-        margin-bottom: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
     }
 
     .login-welcome {
-        font-size: 1rem;
+        font-size: 1.25rem;
+        font-weight: 400;
     }
 
     .login-rt {
-        font-size: 1.4rem;
+        font-size: 2rem;
+        letter-spacing: 1px;
     }
 
     .login-form-group {
         margin-bottom: var(--spacing-md);
     }
 
+    .login-form-group label {
+        font-size: 0.9rem;
+        margin-bottom: var(--spacing-xs);
+    }
+
     .login-input {
         font-size: 16px !important;
-        min-height: 46px;
-        padding: var(--spacing-sm) var(--spacing-md) !important;
+        min-height: 50px;
+        padding: var(--spacing-md) !important;
+        border-radius: var(--radius-md);
+        /* Smooth transitions for focus */
+        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
     }
 
     .remember-me {
-        margin-bottom: var(--spacing-md) !important;
+        margin-bottom: var(--spacing-lg) !important;
+    }
+
+    .checkbox-label span:last-child {
+        font-size: 0.85rem;
     }
 
     .btn-login {
-        min-height: 48px;
-        font-size: 0.9rem;
+        min-height: 52px;
+        font-size: 1rem;
+        border-radius: var(--radius-md);
+        /* Disable complex gradient animation on mobile */
+        animation: none;
+        background: linear-gradient(135deg, var(--secondary), var(--accent));
     }
 
-    .login-glow {
-        width: 200px;
-        height: 200px;
+    .btn-login:active {
+        transform: scale(0.98);
     }
 
     .login-footer {
-        margin-top: var(--spacing-md);
+        margin-top: var(--spacing-lg);
         padding-top: var(--spacing-md);
     }
 
-    .login-security {
-        margin-bottom: var(--spacing-sm);
-        font-size: 0.65rem;
-        padding: 4px 10px;
-    }
-
     .login-footer p {
-        font-size: 0.6rem;
+        font-size: 0.7rem;
     }
 
     .login-logo {
@@ -2155,40 +2460,80 @@ textarea.form-control {
         height: 300px;
     }
 
-    /* Logout modal mobile */
+    /* Logout modal mobile - ENHANCED */
+    .logout-modal {
+        align-items: center;
+        padding: var(--spacing-md);
+    }
+
     .logout-modal-content {
-        margin: var(--spacing-md);
+        margin: 0;
         max-width: calc(100vw - 32px);
+        border-radius: var(--radius-xl);
+        animation: mobileLogoutFadeIn 0.3s ease-out;
+    }
+
+    @keyframes mobileLogoutFadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .logout-modal .modal-body {
+        padding: var(--spacing-xl) var(--spacing-lg);
+    }
+
+    .logout-modal .modal-body::after {
+        margin-top: var(--spacing-md);
+        font-size: 0.8rem;
+        letter-spacing: 6px;
     }
 
     .logout-icon-wrapper {
-        width: 80px;
-        height: 80px;
+        width: 100px;
+        height: 100px;
+        margin-bottom: var(--spacing-lg);
     }
 
     .logout-icon-circle {
-        width: 64px;
-        height: 64px;
-        font-size: 1.5rem;
+        width: 70px;
+        height: 70px;
+        font-size: 1.8rem;
     }
 
     .logout-title {
-        font-size: 1.2rem;
+        font-size: 1.3rem;
     }
 
     .logout-message {
-        font-size: 0.85rem;
+        font-size: 0.9rem;
+        max-width: 100%;
     }
 
     .logout-modal-footer {
         flex-direction: column;
         gap: var(--spacing-sm);
+        padding: var(--spacing-md) var(--spacing-lg);
+        padding-bottom: max(var(--spacing-lg), env(safe-area-inset-bottom, 16px));
     }
 
     .btn-cancel-logout,
     .btn-confirm-logout {
         width: 100%;
         justify-content: center;
+        min-height: 50px;
+        font-size: 0.95rem;
+    }
+
+    .btn-confirm-logout {
+        order: -1;
+        animation: none;
     }
 }
 
