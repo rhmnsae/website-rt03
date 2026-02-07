@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description"
+        content="Website Rukun Tetangga RT03/RW16 Kampung Sindangsari - Sistem Informasi Data Penerima Program Makanan Bergizi Gratis">
+    <meta name="theme-color" content="#1B5E20">
+    <title>RT03 Official</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- SheetJS with Styling Support -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Mobile Menu Toggle -->
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Mobile Overlay -->
+        <div class="menu-overlay" id="menuOverlay"></div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    🏘️
+                </div>
+                <h1 class="sidebar-title">RT03/RW016</h1>
+                <p class="sidebar-subtitle">
+                    Kampung Sindangsari<br>
+                    Kelurahan Manggahang<br>
+                    Kecamatan Baleendah
+                </p>
+            </div>
+
+            <nav class="nav-menu">
+                <a class="nav-item active" data-tab="dashboard">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <!-- Data Penerima MBG - Collapsible Menu -->
+                <div class="nav-group">
+                    <a class="nav-item nav-parent" id="navMBG" onclick="toggleSubMenu('mbg-submenu')">
+                        <i class="fas fa-utensils"></i>
+                        <span>Data Penerima MBG</span>
+                        <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-submenu" id="mbg-submenu">
+                        <a class="nav-item nav-child" data-tab="ibu-menyusui">
+                            <i class="fas fa-baby-carriage"></i>
+                            <span>Ibu Menyusui</span>
+                            <span class="nav-badge">0</span>
+                        </a>
+                        <a class="nav-item nav-child" data-tab="ibu-hamil">
+                            <i class="fas fa-person-pregnant"></i>
+                            <span>Ibu Hamil</span>
+                            <span class="nav-badge">0</span>
+                        </a>
+                        <a class="nav-item nav-child" data-tab="balita">
+                            <i class="fas fa-baby"></i>
+                            <span>Balita</span>
+                            <span class="nav-badge">0</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <p>
+                    Kabupaten Bandung, Jawa Barat<br>
+                    Kode Pos 40375
+                </p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-title">
+                    <h1>Dashboard</h1>
+                    <p>Ringkasan data penerima program makanan bergizi</p>
+                </div>
+            </header>
+
+            <!-- Dashboard Tab -->
+            <section id="dashboard" class="tab-content active">
+                <div class="dashboard-grid">
+                    <div class="stat-card" onclick="switchTab('ibu-menyusui')">
+                        <div class="stat-card-icon pink">
+                            <i class="fas fa-baby-carriage"></i>
+                        </div>
+                        <h3>Ibu Menyusui</h3>
+                        <div class="stat-number" id="countIbuMenyusui">0</div>
+                    </div>
+
+                    <div class="stat-card" onclick="switchTab('ibu-hamil')">
+                        <div class="stat-card-icon purple">
+                            <i class="fas fa-person-pregnant"></i>
+                        </div>
+                        <h3>Ibu Hamil</h3>
+                        <div class="stat-number" id="countIbuHamil">0</div>
+                    </div>
+
+                    <div class="stat-card" onclick="switchTab('balita')">
+                        <div class="stat-card-icon blue">
+                            <i class="fas fa-baby"></i>
+                        </div>
+                        <h3>Balita</h3>
+                        <div class="stat-number" id="countBalita">0</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-icon green">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>Total Penerima</h3>
+                        <div class="stat-number" id="countTotal">0</div>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-info-circle"></i> Informasi Program</h2>
+                    </div>
+                    <div class="card-body">
+                        <p style="color: var(--text-secondary); line-height: 1.8;">
+                            <strong style="color: var(--accent);">Program Makanan Bergizi Gratis</strong> adalah program
+                            bantuan gizi untuk masyarakat yang dilaksanakan oleh
+                            <strong>Posyandu Melati 16</strong> di bawah koordinasi <strong>Satuan Pelayanan Pemenuhan
+                                Gizi (SPPG) Manggahang 05</strong>.
+                            <br><br>
+                            Program ini ditujukan untuk:
+                        </p>
+                        <ul
+                            style="color: var(--text-secondary); margin-left: 1.5rem; margin-top: 1rem; line-height: 2;">
+                            <li>👩‍🍼 <strong>Ibu Menyusui</strong> - Mendukung nutrisi ibu selama masa menyusui</li>
+                            <li>🤰 <strong>Ibu Hamil</strong> - Memastikan asupan gizi selama kehamilan</li>
+                            <li>👶 <strong>Balita</strong> - Mendukung tumbuh kembang anak usia dini</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Ibu Menyusui Tab -->
+            <section id="ibu-menyusui" class="tab-content">
+                <div class="content-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-baby-carriage"></i> Data Ibu Menyusui</h2>
+                        <div class="card-actions">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" placeholder="Cari nama atau NIK..." data-type="ibu-menyusui">
+                            </div>
+                            <button class="btn btn-success" onclick="openAddModal('ibu-menyusui')">
+                                <i class="fas fa-plus"></i>
+                                <span>Tambah</span>
+                            </button>
+                            <button class="btn btn-secondary" onclick="exportData('ibu-menyusui')">
+                                <i class="fas fa-download"></i>
+                                <span>Export</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>NIK</th>
+                                        <th>Nama</th>
+                                        <th>Tanggal Lahir</th>
+                                        <th>Alamat</th>
+                                        <th>Nama Suami</th>
+                                        <th>Keterangan</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableIbuMenyusui">
+                                    <!-- Data will be rendered here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Ibu Hamil Tab -->
+            <section id="ibu-hamil" class="tab-content">
+                <div class="content-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-person-pregnant"></i> Data Ibu Hamil</h2>
+                        <div class="card-actions">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" placeholder="Cari nama atau NIK..." data-type="ibu-hamil">
+                            </div>
+                            <button class="btn btn-success" onclick="openAddModal('ibu-hamil')">
+                                <i class="fas fa-plus"></i>
+                                <span>Tambah</span>
+                            </button>
+                            <button class="btn btn-secondary" onclick="exportData('ibu-hamil')">
+                                <i class="fas fa-download"></i>
+                                <span>Export</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>NIK</th>
+                                        <th>Nama</th>
+                                        <th>Tanggal Lahir</th>
+                                        <th>Alamat</th>
+                                        <th>Nama Suami</th>
+                                        <th>Keterangan</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableIbuHamil">
+                                    <!-- Data will be rendered here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Balita Tab -->
+            <section id="balita" class="tab-content">
+                <div class="content-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-baby"></i> Data Balita</h2>
+                        <div class="card-actions">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" placeholder="Cari nama atau NIK..." data-type="balita">
+                            </div>
+                            <button class="btn btn-success" onclick="openAddModal('balita')">
+                                <i class="fas fa-plus"></i>
+                                <span>Tambah</span>
+                            </button>
+                            <button class="btn btn-secondary" onclick="exportData('balita')">
+                                <i class="fas fa-download"></i>
+                                <span>Export</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>NIK</th>
+                                        <th>Nama</th>
+                                        <th>Tanggal Lahir</th>
+                                        <th>Alamat</th>
+                                        <th>Keterangan</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBalita">
+                                    <!-- Data will be rendered here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal: Ibu Menyusui -->
+    <div class="modal" id="modalIbuMenyusui">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> Tambah Data Ibu Menyusui</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="formIbuMenyusui">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>NIK <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="imNik" placeholder="Masukkan 16 digit NIK"
+                            maxlength="16" pattern="\d{16}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nama Ibu Menyusui <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="imNama" placeholder="Masukkan nama lengkap"
+                            required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Tanggal Lahir <span class="required">*</span></label>
+                            <input type="date" class="form-control" id="imTanggalLahir" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nama Suami <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="imNamaSuami" placeholder="Nama suami" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Alamat <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="imAlamat" placeholder="Alamat lengkap" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Keterangan</label>
+                        <textarea class="form-control" id="imKeterangan"
+                            placeholder="Keterangan tambahan (opsional)"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                        onclick="closeModal('modalIbuMenyusui')">Batal</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Ibu Hamil -->
+    <div class="modal" id="modalIbuHamil">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> Tambah Data Ibu Hamil</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="formIbuHamil">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>NIK <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="ihNik" placeholder="Masukkan 16 digit NIK"
+                            maxlength="16" pattern="\d{16}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nama Ibu Hamil <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="ihNama" placeholder="Masukkan nama lengkap"
+                            required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Tanggal Lahir <span class="required">*</span></label>
+                            <input type="date" class="form-control" id="ihTanggalLahir" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nama Suami <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="ihNamaSuami" placeholder="Nama suami" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Alamat <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="ihAlamat" placeholder="Alamat lengkap" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Keterangan</label>
+                        <textarea class="form-control" id="ihKeterangan"
+                            placeholder="Keterangan tambahan, misal: usia kehamilan"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modalIbuHamil')">Batal</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Balita -->
+    <div class="modal" id="modalBalita">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> Tambah Data Balita</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="formBalita">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>NIK <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="bNik" placeholder="Masukkan 16 digit NIK"
+                            maxlength="16" pattern="\d{16}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nama Balita <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="bNama" placeholder="Masukkan nama lengkap" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal Lahir <span class="required">*</span></label>
+                        <input type="date" class="form-control" id="bTanggalLahir" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Alamat <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="bAlamat" placeholder="Alamat lengkap" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Keterangan</label>
+                        <textarea class="form-control" id="bKeterangan"
+                            placeholder="Keterangan tambahan, misal: BB, TB, status gizi"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modalBalita')">Batal</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="confirm-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 style="margin-bottom: 1rem;">Konfirmasi Hapus</h3>
+                <p id="confirmMessage">Apakah Anda yakin ingin menghapus data ini?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="confirmNo">Batal</button>
+                <button class="btn btn-danger" id="confirmYes">
+                    <i class="fas fa-trash"></i> Hapus
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span id="toastMessage"></span>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/storage.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
