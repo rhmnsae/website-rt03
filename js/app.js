@@ -109,9 +109,14 @@ function performLogout() {
     // Show login screen
     document.getElementById('loginScreen').classList.remove('hidden');
 
-    // Clear form
+    // Clear form and reset button state
     document.getElementById('loginUsername').value = '';
     document.getElementById('loginPassword').value = '';
+
+    // Reset login button to normal state
+    const loginButton = document.getElementById('loginButton');
+    loginButton.disabled = false;
+    loginButton.classList.remove('loading');
 
     showToast('Anda telah keluar dari sistem', 'info');
 }
