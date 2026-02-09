@@ -68,11 +68,6 @@
 
 <body>
     <div class="app-container">
-        <!-- Mobile Menu Toggle -->
-        <button class="menu-toggle" id="menuToggle">
-            <i class="fas fa-bars"></i>
-        </button>
-
         <!-- Mobile Overlay -->
         <div class="menu-overlay" id="menuOverlay"></div>
 
@@ -143,9 +138,14 @@
         <main class="main-content">
             <!-- Header -->
             <header class="header">
-                <div class="header-title">
-                    <h1>Dashboard</h1>
-                    <p>Ringkasan data penerima program makanan bergizi</p>
+                <div class="header-left">
+                    <button class="menu-toggle" id="menuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="header-title">
+                        <h1>Dashboard</h1>
+                        <p>Ringkasan data penerima program makanan bergizi</p>
+                    </div>
                 </div>
             </header>
 
@@ -595,7 +595,7 @@
     </div>
 
     <!-- Login Screen -->
-    <div class="login-screen" id="loginScreen">
+    <div class="login-screen hidden" id="loginScreen">
         <!-- Animated Background -->
         <div class="login-bg-animation">
             <div class="login-particles" id="loginParticles"></div>

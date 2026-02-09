@@ -155,14 +155,14 @@ body::before {
 }
 
 .sidebar-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: var(--spacing-xs);
 }
 
 .sidebar-subtitle {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
     line-height: 1.4;
 }
@@ -183,7 +183,7 @@ body::before {
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
-    padding: var(--spacing-md) var(--spacing-lg);
+    padding: var(--spacing-md);
     border-radius: var(--radius-md);
     color: var(--text-secondary);
     text-decoration: none;
@@ -191,6 +191,7 @@ body::before {
     transition: all var(--transition-fast);
     cursor: pointer;
     border: 1px solid transparent;
+    font-size: 0.9rem;
 }
 
 .nav-item:hover {
@@ -206,7 +207,7 @@ body::before {
 }
 
 .nav-item i {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     width: 24px;
     text-align: center;
 }
@@ -266,8 +267,8 @@ body::before {
 }
 
 .nav-child {
-    padding-left: calc(var(--spacing-lg) + var(--spacing-md));
-    font-size: 0.9rem;
+    padding-left: var(--spacing-md);
+    font-size: 0.85rem;
     border-left: 2px solid var(--glass-border);
     margin-left: var(--spacing-lg);
     border-radius: 0 var(--radius-md) var(--radius-md) 0;
@@ -349,31 +350,28 @@ body::before {
 }
 
 /* Mobile Menu Toggle */
+/* Mobile Menu Toggle - Updated for Header */
 .menu-toggle {
-    display: none;
-    position: fixed;
-    top: var(--spacing-md);
-    left: var(--spacing-md);
-    z-index: 200;
-    width: 52px;
-    height: 52px;
-    background: linear-gradient(135deg, var(--primary-light), var(--primary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: transparent;
     border: none;
     border-radius: var(--radius-md);
     color: var(--text-primary);
-    font-size: 1.4rem;
+    font-size: 1.25rem;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-    align-items: center;
-    justify-content: center;
     transition: all var(--transition-fast);
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
+}
+
+.menu-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .menu-toggle:active {
     transform: scale(0.95);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .menu-toggle i {
@@ -410,6 +408,7 @@ body::before {
     margin-left: var(--sidebar-width);
     padding: var(--spacing-xl);
     min-height: 100vh;
+    transition: margin-left var(--transition-normal);
 }
 
 /* Header */
@@ -419,6 +418,12 @@ body::before {
     justify-content: space-between;
     margin-bottom: var(--spacing-xl);
     flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
     gap: var(--spacing-md);
 }
 
@@ -440,6 +445,17 @@ body::before {
 .header-actions {
     display: flex;
     gap: var(--spacing-sm);
+}
+
+/* Sidebar Hidden State (Desktop Only) */
+@media (min-width: 769px) {
+    body.sidebar-hidden .sidebar {
+        transform: translateX(-100%);
+    }
+
+    body.sidebar-hidden .main-content {
+        margin-left: 0;
+    }
 }
 
 /* =============================================
@@ -1549,7 +1565,7 @@ textarea.form-control {
     .main-content {
         margin-left: 0;
         padding: var(--spacing-md);
-        padding-top: 72px;
+        padding-top: var(--spacing-md);
     }
 
     .header {

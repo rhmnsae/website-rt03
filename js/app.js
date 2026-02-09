@@ -42,17 +42,20 @@ function updateAuthUI() {
     const navDataMBG = document.getElementById('navDataMBG');
     const sidebarLoginBtn = document.getElementById('sidebarLoginBtn');
     const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
+    const storageInfoCard = document.querySelector('.storage-info-card');
 
     if (isLoggedIn) {
         // Admin Mode
         if (navDataMBG) navDataMBG.style.display = 'block';
         if (sidebarLoginBtn) sidebarLoginBtn.style.display = 'none';
         if (sidebarLogoutBtn) sidebarLogoutBtn.style.display = 'flex';
+        if (storageInfoCard) storageInfoCard.style.display = 'block';
     } else {
         // Guest Mode
         if (navDataMBG) navDataMBG.style.display = 'none';
         if (sidebarLoginBtn) sidebarLoginBtn.style.display = 'flex';
         if (sidebarLogoutBtn) sidebarLogoutBtn.style.display = 'none';
+        if (storageInfoCard) storageInfoCard.style.display = 'none';
     }
 }
 
@@ -264,6 +267,13 @@ function initializeMobileMenu() {
 
     menuToggle?.addEventListener('click', toggleMobileMenu);
     menuOverlay?.addEventListener('click', closeMobileMenu);
+
+    // Close mobile menu on resize to desktop
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 769) {
+            closeMobileMenu();
+        }
+    });
 }
 
 function toggleMobileMenu() {
@@ -271,15 +281,21 @@ function toggleMobileMenu() {
     const overlay = document.getElementById('menuOverlay');
     const menuToggle = document.getElementById('menuToggle');
 
-    sidebar.classList.toggle('open');
-    overlay.classList.toggle('show');
-    menuToggle?.classList.toggle('active');
+    // Check if we are on mobile
+    if (window.innerWidth < 769) {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('show');
+        menuToggle?.classList.toggle('active');
 
-    // Prevent body scroll when menu is open
-    if (sidebar.classList.contains('open')) {
-        document.body.style.overflow = 'hidden';
+        // Prevent body scroll when menu is open
+        if (sidebar.classList.contains('open')) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
     } else {
-        document.body.style.overflow = '';
+        // Desktop: toggle sidebar visibility
+        document.body.classList.toggle('sidebar-hidden');
     }
 }
 
