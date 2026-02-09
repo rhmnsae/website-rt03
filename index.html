@@ -97,7 +97,7 @@
                 </a>
 
                 <!-- Data Penerima MBG - Collapsible Menu -->
-                <div class="nav-group">
+                <div class="nav-group" id="navDataMBG">
                     <a class="nav-item nav-parent" id="navMBG" onclick="toggleSubMenu('mbg-submenu')">
                         <i class="fas fa-utensils"></i>
                         <span>Data Penerima MBG</span>
@@ -124,7 +124,11 @@
             </nav>
 
             <div class="sidebar-footer">
-                <button class="btn btn-logout" onclick="showLogoutConfirm()">
+                <button class="btn btn-login-sidebar" id="sidebarLoginBtn" onclick="showLoginScreen()">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Login Admin</span>
+                </button>
+                <button class="btn btn-logout" id="sidebarLogoutBtn" onclick="showLogoutConfirm()">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Logout</span>
                 </button>
@@ -601,6 +605,9 @@
         <div class="login-container">
             <div class="login-card">
                 <div class="login-header">
+                    <button class="btn-close-login" onclick="hideLoginScreen()" title="Kembali ke Dashboard">
+                        <i class="fas fa-times"></i>
+                    </button>
                     <h1 class="login-welcome">Selamat Datang</h1>
                     <p class="login-rt">RT03/RW016</p>
                 </div>

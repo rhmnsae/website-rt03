@@ -6,6 +6,11 @@
 // =============================================
 
 // Login credentials (in production, use proper authentication)
+// =============================================
+// AUTHENTICATION
+// =============================================
+
+// Login credentials (in production, use proper authentication)
 const AUTH_USERNAME = 'admin';
 const AUTH_PASSWORD = 'bandung123';
 const AUTH_STORAGE_KEY = 'rt03_auth_session';
@@ -29,7 +34,47 @@ function checkAuth() {
             console.error('Invalid session data');
         }
     }
+    isLoggedIn = false;
     return false;
+}
+
+function updateAuthUI() {
+    const navDataMBG = document.getElementById('navDataMBG');
+    const sidebarLoginBtn = document.getElementById('sidebarLoginBtn');
+    const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
+
+    if (isLoggedIn) {
+        // Admin Mode
+        if (navDataMBG) navDataMBG.style.display = 'block';
+        if (sidebarLoginBtn) sidebarLoginBtn.style.display = 'none';
+        if (sidebarLogoutBtn) sidebarLogoutBtn.style.display = 'flex';
+    } else {
+        // Guest Mode
+        if (navDataMBG) navDataMBG.style.display = 'none';
+        if (sidebarLoginBtn) sidebarLoginBtn.style.display = 'flex';
+        if (sidebarLogoutBtn) sidebarLogoutBtn.style.display = 'none';
+    }
+}
+
+function showLoginScreen() {
+    // Close mobile menu first if open
+    closeMobileMenu();
+    const loginScreen = document.getElementById('loginScreen');
+    loginScreen.classList.remove('hidden');
+
+    // Reset form
+    document.getElementById('loginUsername').value = '';
+    document.getElementById('loginPassword').value = '';
+
+    // Reset animation/styles
+    loginScreen.style.opacity = '';
+    loginScreen.style.transform = '';
+    loginScreen.style.transition = '';
+}
+
+function hideLoginScreen() {
+    const loginScreen = document.getElementById('loginScreen');
+    loginScreen.classList.add('hidden');
 }
 
 function handleLogin(event) {
@@ -60,6 +105,9 @@ function handleLogin(event) {
                 localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(sessionData));
             }
 
+            // Update UI for Admin
+            updateAuthUI();
+
             // Hide login screen with transition
             const loginScreen = document.getElementById('loginScreen');
             loginScreen.style.opacity = '0';
@@ -75,8 +123,9 @@ function handleLogin(event) {
 
             showToast('Selamat datang, Admin!', 'success');
 
-            // Load data
-            initializeApp();
+            // Allow access to data tabs if we were waiting
+            // initializeApp is called on load now, so we just let user navigate
+
         } else {
             // Login failed
             showToast('Username atau password salah!', 'error');
@@ -106,19 +155,15 @@ function performLogout() {
     // Close modal
     closeModal('logoutModal');
 
-    // Show login screen
-    document.getElementById('loginScreen').classList.remove('hidden');
+    // Update UI for Guest
+    updateAuthUI();
 
-    // Clear form and reset button state
-    document.getElementById('loginUsername').value = '';
-    document.getElementById('loginPassword').value = '';
+    // Redirect to dashboard if on a restricted tab
+    if (currentTab !== 'dashboard') {
+        switchTab('dashboard');
+    }
 
-    // Reset login button to normal state
-    const loginButton = document.getElementById('loginButton');
-    loginButton.disabled = false;
-    loginButton.classList.remove('loading');
-
-    showToast('Anda telah keluar dari sistem', 'info');
+    showToast('Anda telah keluar. Mode Tamu aktif.', 'info');
 }
 
 function togglePasswordVisibility() {
@@ -166,6 +211,14 @@ function initializeNavigation() {
 }
 
 function switchTab(tabName) {
+    // Check restricted access
+    const restrictedTabs = ['ibu-menyusui', 'ibu-hamil', 'balita'];
+    if (restrictedTabs.includes(tabName) && !isLoggedIn) {
+        showToast('Silakan login sebagai admin untuk melihat data detail', 'info');
+        showLoginScreen();
+        return;
+    }
+
     currentTab = tabName;
 
     // Update nav items
@@ -1244,14 +1297,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     createLoginParticles();
 
     // Check if user is already logged in
-    if (checkAuth()) {
-        // Hide login screen and load app
-        document.getElementById('loginScreen').classList.add('hidden');
-        await initializeApp();
-    } else {
-        // Show login screen
-        document.getElementById('loginScreen').classList.remove('hidden');
-    }
+    checkAuth();
+    updateAuthUI();
+
+    // If not logged in, we are in Guest Mode (Dashboard Only)
+    // If logged in, we are in Admin Mode (Full Access)
+
+    // Always initialize app (load public dashboard data)
+    await initializeApp();
+
+    // Hide login screen initially (unless specific logic requires it to show, but for guest mode we hide it)
+    document.getElementById('loginScreen').classList.add('hidden');
 });
 
 // =============================================
