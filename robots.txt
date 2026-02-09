@@ -1,0 +1,13 @@
+# robots.txt for RT03/RW016 Kampung Sindangsari Website
+# https://rhmnsae.github.io/website-rukun-tetangga/
+
+# Allow all search engines to crawl the website
+User-agent: *
+Allow: /
+
+# Point to sitemap
+Sitemap: https://rhmnsae.github.io/website-rukun-tetangga/sitemap.xml
+
+# Disallow unnecessary files
+Disallow: /js/
+Disallow: /.git/
